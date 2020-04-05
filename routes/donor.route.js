@@ -7,4 +7,27 @@ router.get("/", (req, res) => {
   res.render("main");
 });
 
+
+router.get("/signup", (req,res) => {
+  console.log('signup page')
+  res.render('signup')
+})
+
+
+router.post("/signup", async (req, res) => {
+  console.log('posting user data to db')
+  res.redirect('login')
+})
+
+
+router.get("/login", (req, res) => {
+  console.log('login page')
+  res.render('login')
+})
+
+
+router.post("/login", (req, res) => {
+  console.log('Posting log in data to db ')
+})
+
 module.exports = router;
