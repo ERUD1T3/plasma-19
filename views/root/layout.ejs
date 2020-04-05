@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>SeaIRL</title>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Plasma-19</title>
 
     <!-- favicon  -->
     <!-- <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
@@ -17,15 +15,23 @@
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#100d0d"> -->
 
-
     <!--------------------------------------------------------------------------------------------------
          Styles  
     --------------------------------------------------------------------------------------------------->
 
     <!-- MDC classes -->
-    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
+    <link
+      href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500"
+      rel="stylesheet"
+    />
 
     <!-- file pond file upload -->
     <!-- <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
@@ -33,33 +39,42 @@
     <link href="https://unpkg.com/filepond/dist/filepond.css" rel="stylesheet"> -->
 
     <!-- Mapbox -->
-    <link href='https://api.mapbox.com/mapbox-gl-js/v1.2.0/mapbox-gl.css' rel='stylesheet'>
-
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v1.2.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
 
     <!-- Custom styles -->
-    <link href="/styles/main.css" rel="stylesheet">
+    <link href="/styles/main.css" rel="stylesheet" />
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
 
     <!-- popups -->
     <!-- <link rel="stylesheet" href="popupS.css"> -->
 
     <!-- Snackbar notifications -->
-    <link rel="stylesheet" type="text/css" href="/assets/packages/dist/snackbar.min.css" />
-
-
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="/assets/packages/dist/snackbar.min.css"
+    />
 
     <!-----------------------------------------------------------------------------------------------------
         Scripts 
     ------------------------------------------------------------------------------------------------------>
 
     <!-- MDC CDN classes scripts -->
-    <script defer src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <script
+      defer
+      src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"
+    ></script>
 
-   
     <!-- Filepond plugin  -->
     <!-- <script defer src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.js"></script>
     <script defer src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
@@ -68,50 +83,49 @@
     <script defer type="text/javascript" src="/scripts/fileUpload.js"></script> -->
 
     <!-- bootstrap -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
-    </script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-    </script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
 
     <!-- custom scripts -->
-    
 
-    <script defer type="text/javascript" src="/scripts/instances/mdc.instances.js"></script>
+    <script
+      defer
+      type="text/javascript"
+      src="/scripts/instances/mdc.instances.js"
+    ></script>
+  </head>
 
-
-
-
-
-
-
-
-</head>
-
-<body>
+  <body>
     <div class="body-container">
-        <div class="header-container">
-            <%- include('../plugins/header.ejs') %>
-        </div>
+      <div class="header-container">
+        <%- include('../plugins/header.ejs') %>
+      </div>
 
-        <br>
-        <%- include('../plugins/errorMessage.ejs') %>
+      <br />
+      <%- include('../plugins/error.ejs') %>
 
+      <div class="body-inner-container">
+        <%- body %>
+      </div>
 
-        <div class="body-inner-container">
-            <%- body %>
-        </div>
+      <br />
 
-        <br>
-
-        <!-- <div class="footer-container">
-            <%# include('../plugins/footer.ejs') %>
-        </div> -->
+      <div>
+        <%- include('../plugins/footer.ejs') %>
+      </div>
     </div>
-</body>
-
+  </body>
 </html>
