@@ -1,17 +1,17 @@
 // route for user request
 const router = require("express").Router();
 const Donor = require("../model/donor");
-const bcrypt = require('bcrypt')
+// const bcrypt = require('bcrypt')
 const passport = require('passport')
 const initializePassport = require('../configs/passport.config').initialize
 
-initializePassport(passport, Donor)
-
+initializePassport(passport)
 
 
 router.get("/", (req, res) => {
   console.log("Root page");
   //res.send("hello world")
+  console.log(`locals ${res.locals.donor}`)
   res.render("main");
 });
 
@@ -107,10 +107,6 @@ router.post("/signup", async (req, res) => {
       }
     });
   }
-
-  //res.render("signup");
-  //console.log(req.body);
-  //res.redirect("login");
 });
 
 router.get("/login", (req, res) => {
@@ -119,54 +115,18 @@ router.get("/login", (req, res) => {
 });
 
 
-router.post(
-  "/login",
-  passport.authenticate("local", {
-    failureRedirect: "/login",
-    failureFlash: "Invalid username or password"
-  }),
-  function(req, res) {
-    console.log("successful login");
-    const user_id = req.user.id;
-    console.log("user id: " + user_id);
-    req.login(req.user, function(err) {
+router.post('/login', passport.authenticate('local', {
+  failureRedirect: '/login',
+  failureFlash: 'Incorrect Password! Try again'
+}), (req, res) => {
+  console.log('successful login ' + req.user.email)
+  res.locals.donor = req.user
+  req.login(req.user, (error) => {
+      if (error) return next(error)
       res.redirect('/')
-    });
-  }
-);
-// router.post('/login', (req, res, next) => {
-//   passport.authenticate('local',
-//   (err, user, info) => {
-//     if (err) {
-//       return next(err);
-//     }
+  })
+});
 
-//     if (!user) {
-//       return console.log('no user found');
-//     }
-
-//     req.logIn(user, function(err) {
-//       if (err) {
-//         return next(err);
-//       }
-
-//       return res.redirect('/');
-//     });
-
-//   })(req, res, next);
-// });
-
-// router.post('/login', passport.authenticate('local', {
-//   failureRedirect: '/login',
-//   failureFlash: 'Incorrect Password! Try again'
-// }), (req, res) => {
-//   console.log('successful login ' + req.user.firstname)
-//   // console.log("Posting log in data to db ");
-//   req.login(req.user, (error) => {
-//       if (error) return next(error)
-//       res.redirect('/')
-//   })
-// });
 
 
 router.delete('/logout', (req, res) => {

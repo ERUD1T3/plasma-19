@@ -33,14 +33,7 @@ app.use(
   })
 );
 
-//Express Session
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: false,
-  })
-);
+
 
 // Passport middleware
 app.use(passport.initialize());
@@ -48,7 +41,14 @@ app.use(passport.session());
 
 // Connect flash
 app.use(flash());
-
+//Express Session
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 //Global vars
 app.use(function (req, res, next) {
   res.locals.success_msg = req.flash("success_msg");
@@ -57,15 +57,18 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use((req, res, next) => {
-  res.locals.donor = req.user
-  next()
-})
+
 
 const donor_route = require("./routes/donor.route");
 const misc_route = require("./routes/misc.route");
 app.use("/", donor_route);
 app.use("/info", misc_route);
+
+
+app.use((req, res, next) => {
+  res.locals.donor = req.user
+  next()
+})
 
 async function DBconnectMangoose() {
   // connecting to database with env variable
