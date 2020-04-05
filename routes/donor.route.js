@@ -16,11 +16,13 @@ router.get("/signup", (req,res) => {
 
 router.post("/signup", async (req, res) => {
   console.log('posting user data to db')
+  res.redirect('login')
 })
 
 
 router.get("/login", (req, res) => {
   console.log('login page')
+  res.render('login')
 })
 
 
