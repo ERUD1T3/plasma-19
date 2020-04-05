@@ -1,6 +1,13 @@
 // route for user request
 const router = require("express").Router();
-var Donor = require("../model/donor");
+const Donor = require("../model/donor");
+const bcrypt = require('bcrypt')
+const passport = require('passport')
+const initializePassport = require('../configs/passport.config').initialize
+
+initializePassport(passport, Donor)
+
+
 
 router.get("/", (req, res) => {
   console.log("Root page");
@@ -52,14 +59,14 @@ router.post("/signup", async (req, res) => {
       errors,
     });
   } else {
-    //TODO: Geocode before saving to db
+    
     //Register donor
     var newDonor = new Donor({
       firstname: donor.firstName,
       lastname: donor.lastName,
       email: donor.email,
-      password: donor.password,
-      Blood: donor.bloodType, // type plus Rh so A+
+      password: donor.password1,
+      Blood: `${donor.bloodType} ${donor.Rh}`, // type plus Rh so A+
       Address: {
         line1: donor.inputAddress,
         line2: donor.inputAddress2,
@@ -111,8 +118,60 @@ router.get("/login", (req, res) => {
   res.render("login");
 });
 
-router.post("/login", (req, res) => {
-  console.log("Posting log in data to db ");
-});
+
+router.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+    failureFlash: "Invalid username or password"
+  }),
+  function(req, res) {
+    console.log("successful login");
+    const user_id = req.user.id;
+    console.log("user id: " + user_id);
+    req.login(req.user, function(err) {
+      res.redirect('/')
+    });
+  }
+);
+// router.post('/login', (req, res, next) => {
+//   passport.authenticate('local',
+//   (err, user, info) => {
+//     if (err) {
+//       return next(err);
+//     }
+
+//     if (!user) {
+//       return console.log('no user found');
+//     }
+
+//     req.logIn(user, function(err) {
+//       if (err) {
+//         return next(err);
+//       }
+
+//       return res.redirect('/');
+//     });
+
+//   })(req, res, next);
+// });
+
+// router.post('/login', passport.authenticate('local', {
+//   failureRedirect: '/login',
+//   failureFlash: 'Incorrect Password! Try again'
+// }), (req, res) => {
+//   console.log('successful login ' + req.user.firstname)
+//   // console.log("Posting log in data to db ");
+//   req.login(req.user, (error) => {
+//       if (error) return next(error)
+//       res.redirect('/')
+//   })
+// });
+
+
+router.delete('/logout', (req, res) => {
+  req.logout()
+  res.redirect('/login')
+})
 
 module.exports = router;

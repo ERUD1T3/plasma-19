@@ -10,6 +10,8 @@ const passport = require("passport");
 var cookieParser = require("cookie-parser");
 const flash = require("connect-flash"); //for sending messages on redirect
 const session = require("express-session");
+const methodOverride = require('method-override')
+const morgan = require('morgan')
 const app = express();
 const server = require("http").Server(app);
 
@@ -18,10 +20,12 @@ app.set("view engine", "ejs");
 app.set("views", __dirname + "/views/");
 app.set("layout", "root/layout"); // not a file path; does a lookpu
 
+app.use(morgan('dev'))
 app.use(layouts);
 app.use(express.static(__dirname + "/public")); // serving frontend file; index.html is starting point
 app.use(cookieParser());
 app.use(express.json()); // middleware to read json
+app.use(methodOverride('_method'))
 app.use(
   bodyParser.urlencoded({
     limit: "5mb",
@@ -32,9 +36,9 @@ app.use(
 //Express Session
 app.use(
   session({
-    secret: "war_time_dev",
-    resave: false,
-    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: false,
   })
 );
 
@@ -52,6 +56,11 @@ app.use(function (req, res, next) {
   res.locals.error = req.flash("error");
   next();
 });
+
+app.use((req, res, next) => {
+  res.locals.donor = req.user
+  next()
+})
 
 const donor_route = require("./routes/donor.route");
 const misc_route = require("./routes/misc.route");

@@ -46,11 +46,19 @@ module.exports.comparePassword = function (candidatePassword, hash, callback) {
   // User.findOne(query, callback);
 };
 
-module.exports.createDonor = function (newDonor, callback) {
-  bcrypt.genSalt(10, function (err, salt) {
-    bcrypt.hash(newDonor.password, salt, function (err, hash) {
-      newDonor.password = hash; //encrypt password using hash
-      newDonor.save(callback);
-    });
-  });
+module.exports.createDonor = async function (newDonor, callback) {
+  // bcrypt.genSalt(10, function (err, salt) {
+  //   bcrypt.hash(newDonor.password, salt, function (err, hash) {
+  //     newDonor.password = hash; //encrypt password using hash
+  //     await newDonor.save(callback);
+  //   });
+  // });
+
+  try {
+    var hash = await bcrypt.hash(newDonor.password, 10)
+    newDonor.password = hash; //encrypt password using hash
+    await newDonor.save(callback);
+  } catch (error) {
+    console.log(error)
+  }
 };
