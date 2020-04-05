@@ -17,7 +17,7 @@ const donorSchema = new mongoose.Schema({
     zip: String,
     location: {
       longitude: Number,
-      latitute: Number,
+      latitude: Number,
     },
   },
   date: {

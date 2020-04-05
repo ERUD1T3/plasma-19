@@ -60,7 +60,7 @@ router.post("/signup", async (req, res) => {
         zip: donor.zip,
         location: {
           longitude: 0,
-          latitute: 0,
+          latitude: 0,
         },
       },
     });
