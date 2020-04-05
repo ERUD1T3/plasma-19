@@ -28,7 +28,7 @@ var map = new mapboxgl.Map({
   scrollZoom: false,
 });
 
-map.addControl(geoTracker);
+map.addControl(geoTracker, 'bottom-right');
 
 var stores = {
   type: "FeatureCollection",
@@ -277,7 +277,7 @@ map.on("load", function (e) {
    * - The markers onto the map
    */
   buildLocationList(stores);
-  map.addControl(geocoder, "top-left");
+  map.addControl(geocoder, "bottom-left");
   addMarkers();
 
   /**
