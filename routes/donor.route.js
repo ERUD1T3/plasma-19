@@ -17,6 +17,8 @@ router.post("/signup", async (req, res) => {
   console.log("posting user data to db");
   donor = req.body;
   console.log(donor);
+  console.log(donor.longitude, donor.latitude)
+
   let errors = [];
   if (
     !donor.firstName ||
@@ -36,6 +38,12 @@ router.post("/signup", async (req, res) => {
     errors.push({ msg: "Please select blood type Rh" });
   } else if (donor.password1 != donor.password2) {
     errors.push({ msg: "Passwords must match" });
+  } 
+  else if (
+    !donor.longitude ||
+    !donor.latitude
+  ) {
+    errors.push({msg: "error extracting GPS coordinates"});
   }
 
   if (errors.length > 0) {
@@ -59,8 +67,8 @@ router.post("/signup", async (req, res) => {
         state: donor.state,
         zip: donor.zip,
         location: {
-          longitude: 0,
-          latitude: 0,
+          longitude: donor.longitude,
+          latitude: donor.latitude
         },
       },
     });
