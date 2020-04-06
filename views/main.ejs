@@ -32,7 +32,7 @@
     <script type="text/javascript">
       var listElement = document.getElementById("list-element");
       var seekingMessage = document.createElement('h2');
-      seekingMessage.innerHTML = "Finding donors near you...";
+      seekingMessage.innerHTML = "Finding donors near you...<br>"+"<h4> Please make sure location is activated </h4>";
       seekingMessage.style.color = 'white';
       listElement.appendChild(seekingMessage);
       mapboxgl.accessToken =
