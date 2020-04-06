@@ -14,6 +14,9 @@ initialize(passport)
 router.get("/", (req, res) => {
   console.log("Root page");
   //res.send("hello world")
+
+  // Donor.find({}, function(err, ))
+  
   console.log(`locals ${req.user}`)
   res.render("main", {
     donor: req.user
@@ -125,9 +128,7 @@ router.post('/login', passport.authenticate('local', {
   failureFlash: 'Incorrect Password! Try again'
 }), (req, res) => {
   console.log('successful login ' + req.user.email)
-  console.log('locals app.js %j', res.locals)
-
-  
+  // console.log('locals app.js %j', res.locals)
 
   req.login(req.user, (error) => {
       if (error) return next(error)
