@@ -8,10 +8,16 @@
 <!-- <div class="sidebar">
   <div class="heading">
     <h1>Donors</h1>
-  </div>
-  <div id="listings" class="listings"></div>
-</div>
-<div id="map" class="map pad2">Map</div> -->
+<div class="d-flex justify-content-center">
+  <div
+    class="list-group overflow-auto"
+    style="height: 400px; width: 50%; margin-top: 4em;"
+    id="list-element"
+  >
+    <!-- list items populated from script below -->
+  <!-- </div> -->
+<!-- </div>
+<div id="map" class="map pad2">Map</div> 
 
 <div class="card w-75">
   <div class="card-body">
@@ -27,6 +33,63 @@
     <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
     <a href="#" class="btn btn-primary">Button</a>
   </div>
-</div>
+</div> -->
 
-<script type="text/javascript" src="/javaScript/map.js"></script>
+<!-- <script type="text/javascript" src="/javaScript/map.js"></script> -->
+<script type="text/javascript">
+  //var x = document.getElementById("demo");
+  //function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } else {
+   // x.innerHTML = "Geolocation is not supported by this browser.";
+  }
+  // }
+
+  function showPosition(position) {
+    // x.innerHTML =
+    //   "Latitude: " +
+    //   position.coords.latitude +
+    //   "<br>Longitude: " +
+    //   position.coords.longitude;
+    var userLoc = [position.coords.longitude, position.coords.latitude];
+    console.log(position.coords.latitude, position.coords.longitude);
+    var donors = <%- JSON.stringify(donors) %>;
+    console.log(donors);
+    var donorLoc;
+    for (let i = 0; i < donors.length; i++){
+      if (donors[i].Address.location.longitude != 0 && donors[i].Address.location.latitude != 0){
+        donorLoc = [donors[i].Address.location.longitude, donors[i].Address.location.latitude]
+        donors[i].dstToUser = euclDst(donorLoc, userLoc);
+        console.log(i);
+        console.log(donors[i].dstToUser);
+      }else {
+        donors[i].dstToUser = 1000000;
+      }
+    }
+    //var sortedDonors = sortDonors(donors);
+     donors.sort(function (a, b) {
+      return a.dstToUser - b.dstToUser;
+    })
+    console.log(donors);
+    var listElement = document.getElementById('list-element');
+    for (let i =0; i < donors.length; i++){
+      var listItem = document.createElement('a');
+      listItem.href = "#"; //Change # to link we would redirect to
+      listItem.classList.add("list-group-item");
+      listItem.classList.add("list-group-item-action");
+       listItem.classList.add("list-group-item-dark");
+      listItem.innerHTML = "<h3>"+donors[i].firstname+"</h3>"+"<br>"+donors[i].dstToUser.toPrecision(1)+" mi away";
+      listElement.appendChild(listItem);
+    }
+
+  }
+
+
+  function euclDst(donorLoc, userLoc){
+    //return (Math.sqrt(Math.pow((donorLoc[0]-userLoc[0]), 2) + Math.pow((donorLoc[1]-userPos[1]), 2)));
+    return Math.sqrt(
+      (donorLoc[0] - userLoc[0]) * (donorLoc[0] - userLoc[0]) + (donorLoc[1] - userLoc[1]) * (donorLoc[1] - userLoc[1])
+    );
+  }
+</script>
