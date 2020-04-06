@@ -2,17 +2,29 @@
 const router = require("express").Router();
 const Donor = require("../model/donor");
 // const bcrypt = require('bcrypt')
-const passport = require('passport')
-const initializePassport = require('../configs/passport.config').initialize
+const passport = require("passport");
+const initializePassport = require("../configs/passport.config").initialize;
+const geoDriver = require("../drivers/geoDriver");
 
-initializePassport(passport)
-
+initializePassport(passport);
 
 router.get("/", (req, res) => {
   console.log("Root page");
   //res.send("hello world")
-  console.log(`locals ${res.locals.donor}`)
-  res.render("main");
+  var errors = [];
+  console.log(`locals ${res.locals.donor}`);
+  Donor.find({}, function (err, donors) {
+    if (err) throw err;
+    if (!donors) {
+      errors.push({ msg: "Could not find donors" });
+      res.render("main", { errors });
+    } else {
+      console.log(donors);
+      res.render("main", {
+        donors,
+      });
+    }
+  });
 });
 
 router.get("/signup", (req, res) => {
@@ -24,7 +36,7 @@ router.post("/signup", async (req, res) => {
   console.log("posting user data to db");
   donor = req.body;
   console.log(donor);
-  console.log(donor.longitude, donor.latitude)
+  //console.log(donor.longitude, donor.latitude);
 
   let errors = [];
   if (
@@ -45,13 +57,10 @@ router.post("/signup", async (req, res) => {
     errors.push({ msg: "Please select blood type Rh" });
   } else if (donor.password1 != donor.password2) {
     errors.push({ msg: "Passwords must match" });
-  } 
-  else if (
-    !donor.longitude ||
-    !donor.latitude
-  ) {
-    errors.push({msg: "error extracting GPS coordinates"});
   }
+  // else if (!donor.longitude || !donor.latitude) {
+  //   errors.push({ msg: "error extracting GPS coordinates" });
+  // }
 
   if (errors.length > 0) {
     console.log(errors);
@@ -59,50 +68,61 @@ router.post("/signup", async (req, res) => {
       errors,
     });
   } else {
-    
-    //Register donor
-    var newDonor = new Donor({
-      firstname: donor.firstName,
-      lastname: donor.lastName,
-      email: donor.email,
-      password: donor.password1,
-      Blood: `${donor.bloodType} ${donor.Rh}`, // type plus Rh so A+
-      Address: {
-        line1: donor.inputAddress,
-        line2: donor.inputAddress2,
-        city: donor.city,
-        state: donor.state,
-        zip: donor.zip,
-        location: {
-          longitude: donor.longitude,
-          latitude: donor.latitude
-        },
-      },
-    });
-
-    Donor.getDonorByEmail(newDonor.email, function (err, donor) {
-      console.log("Checking for existing user");
-      if (err) throw err; //throw error in case there is one
-      if (donor) {
-        //return done(null, false, {message: 'User already exists'});
-        console.log("Found email");
-        errors.push({
-          msg:
-            "This email already exists. Please sign in if you're already registered",
-        });
+    geoDriver.addDonorToMap(donor, function (err, donorOnMap) {
+      if (err || !donorOnMap.geometry.coordinates) {
+        errors.push({ msg: "Could find address on map" });
         res.render("signup", {
           errors,
         });
-        //TODO: 2 flash message. One for  registering in database, one for sent email
       } else {
-        Donor.createDonor(newDonor, function (err, donor) {
-          if (err) throw err;
-          console.log(`${donor.firstName} successfully registered!`);
-          req.flash(
-            "success_msg",
-            "Welcome new donor! You have successfully registered. You may now login"
-          );
-          res.redirect("/login");
+        console.log(`New user located at: ${donorOnMap.geometry.coordinates}`);
+
+        //Register donor to database
+        var newDonor = new Donor({
+          _id: donorOnMap._id,
+          firstname: donor.firstName,
+          lastname: donor.lastName,
+          email: donor.email,
+          password: donor.password1,
+          Blood: `${donor.bloodType} ${donor.Rh}`, // type plus Rh so A+
+          Address: {
+            line1: donor.inputAddress,
+            line2: donor.inputAddress2,
+            city: donor.city,
+            state: donor.state,
+            zip: donor.zip,
+            location: {
+              longitude: donorOnMap.geometry.coordinates[0],
+              latitude: donorOnMap.geometry.coordinates[1],
+            },
+          },
+        });
+
+        Donor.getDonorByEmail(newDonor.email, function (err, donor) {
+          console.log("Checking for existing user");
+          if (err) throw err; //throw error in case there is one
+          if (donor) {
+            //return done(null, false, {message: 'User already exists'});
+            console.log("Found email");
+            errors.push({
+              msg:
+                "This email already exists. Please sign in if you're already registered",
+            });
+            res.render("signup", {
+              errors,
+            });
+            //TODO: 2 flash message. One for  registering in database, one for sent email
+          } else {
+            Donor.createDonor(newDonor, function (err, donor) {
+              if (err) throw err;
+              console.log(`${donor.firstName} successfully registered!`);
+              req.flash(
+                "success_msg",
+                "Welcome new donor! You have successfully registered. You may now login"
+              );
+              res.redirect("/login");
+            });
+          }
         });
       }
     });
@@ -114,24 +134,25 @@ router.get("/login", (req, res) => {
   res.render("login");
 });
 
+router.post(
+  "/login",
+  passport.authenticate("local", {
+    failureRedirect: "/login",
+    failureFlash: "Incorrect Password! Try again",
+  }),
+  (req, res) => {
+    console.log("successful login " + req.user.email);
+    res.locals.donor = req.user;
+    req.login(req.user, (error) => {
+      if (error) return next(error);
+      res.redirect("/");
+    });
+  }
+);
 
-router.post('/login', passport.authenticate('local', {
-  failureRedirect: '/login',
-  failureFlash: 'Incorrect Password! Try again'
-}), (req, res) => {
-  console.log('successful login ' + req.user.email)
-  res.locals.donor = req.user
-  req.login(req.user, (error) => {
-      if (error) return next(error)
-      res.redirect('/')
-  })
+router.delete("/logout", (req, res) => {
+  req.logout();
+  res.redirect("/login");
 });
-
-
-
-router.delete('/logout', (req, res) => {
-  req.logout()
-  res.redirect('/login')
-})
 
 module.exports = router;
