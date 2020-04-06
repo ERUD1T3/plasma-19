@@ -35,9 +35,7 @@ app.use(
 
 
 
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+
 
 // Connect flash
 app.use(flash());
@@ -49,11 +47,20 @@ app.use(
     saveUninitialized: false,
   })
 );
+
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 //Global vars
 app.use(function (req, res, next) {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
+  res.locals.donor = req.user
+  // res.locals.donor = null;
   res.locals.error = req.flash("error");
+  
   next();
 });
 
@@ -65,10 +72,7 @@ app.use("/", donor_route);
 app.use("/info", misc_route);
 
 
-app.use((req, res, next) => {
-  res.locals.donor = req.user
-  next()
-})
+
 
 async function DBconnectMangoose() {
   // connecting to database with env variable

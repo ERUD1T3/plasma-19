@@ -28,31 +28,34 @@
       <li class="nav-item">
         <a class="nav-link" href="/info/team">Contact Us</a>
       </li>
-
-    </ul>
-
-    <div class="nav-item justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="/info/team">Contact Us</a>
+      </li>
       <% if (locals.donor) { %>
-        <div class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="/edit" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <%- include('./profile.ejs')%>
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" href="#">
-              <%- include('./logout.ejs') %>
-            </a>
-            <!-- <a class="dropdown-item" href="#">Another action</a> -->
-            <!-- <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#">Something else here</a> -->
-          </div>
-        </div>
+      <li class="nav-item">
+        <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
+        <%- include('./logout.ejs')%>
+      </li>
       <% } else { %>
-        <div class="text-center">
+        <li class="nav-item">
+          <a class="nav-link btn btn-outline-primary" href="/login">Login</a>
+        </li>
+        <!-- <div class="text-center">
           <a href="/login" class="btn btn-outline-primary">
             Login
           </a>
-        </div>
+        </div> -->
       <% } %>
+    </ul>
+    <div>
+        <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
+        <% if (locals.donor) { %>
+          <li class="nav-item">
+            <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
+            <%- include('./profile.ejs')%>
+          </li>
+        <% } %>
+        
     </div>
   </div>
 </nav>

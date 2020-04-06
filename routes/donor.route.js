@@ -3,16 +3,21 @@ const router = require("express").Router();
 const Donor = require("../model/donor");
 // const bcrypt = require('bcrypt')
 const passport = require('passport')
-const initializePassport = require('../configs/passport.config').initialize
-
-initializePassport(passport)
+const {
+  initialize, 
+  checkAuthenticated,
+  checkNotAuthenticated
+} = require('../configs/passport.config')
+initialize(passport)
 
 
 router.get("/", (req, res) => {
   console.log("Root page");
   //res.send("hello world")
-  console.log(`locals ${res.locals.donor}`)
-  res.render("main");
+  console.log(`locals ${req.user}`)
+  res.render("main", {
+    donor: req.user
+  });
 });
 
 router.get("/signup", (req, res) => {
@@ -120,9 +125,13 @@ router.post('/login', passport.authenticate('local', {
   failureFlash: 'Incorrect Password! Try again'
 }), (req, res) => {
   console.log('successful login ' + req.user.email)
-  res.locals.donor = req.user
+  console.log('locals app.js %j', res.locals)
+
+  
+
   req.login(req.user, (error) => {
       if (error) return next(error)
+      // res.locals.donor = req.user
       res.redirect('/')
   })
 });

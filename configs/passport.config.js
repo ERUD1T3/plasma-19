@@ -46,7 +46,7 @@ function initialize(passport) {
     })
 
     passport.deserializeUser((id, done) => {
-        Donor.getDonorById(id, (error, user) => {
+        return Donor.getDonorById(id, (error, user) => {
             done(error, user)
         })
     })
