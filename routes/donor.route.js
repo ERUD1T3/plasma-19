@@ -6,6 +6,7 @@ var multiparty = require("connect-multiparty")();
 const geoDriver = require("../drivers/geoDriver");
 const fileStreamDriver = require("../drivers/fileStreamDriver");
 const passport = require("passport");
+const nodemailer = require("nodemailer");
 const {
   initialize,
   checkAuthenticated,
@@ -161,11 +162,95 @@ router.post(
 );
 
 router.get("/donors/:id", function (req, res) {
+  // console.log(`Current donor ${req.locals.donor.firstname}`);
   console.log(`Donor: ${req.params.id}`);
   var id = req.params.id;
-  res.render("contactDonor", {
-    id,
+  Donor.find({ _id: id }, function (err, donor) {
+    if (err || !donor) {
+      var errors = [];
+      errors.push({ msg: "Error finding donor" });
+      res.render("main", {
+        errors,
+      });
+    }
+    console.log(donor);
+    res.render("contactDonor", {
+      donor: donor[0].firstname,
+    });
   });
+});
+
+router.post("/donors/:id", function (req, res) {
+  console.log(`Donor: ${req.params.id}`);
+  var id = req.params.id;
+
+  var user = {
+    email: req.body.email,
+    name: req.body.name,
+    message: req.body.message,
+  };
+
+  var errors = new Array();
+  if (!user.email || !user.name || !user.message) {
+    errors.push({ msg: "Please fill in all fields" });
+  }
+
+  if (errors.length > 0) {
+    Donor.find({ _id: id }, function (err, donor) {
+      console.log(errors);
+      if (err || !donor) {
+        var errors = [];
+        errors.push({ msg: "Error finding donor" });
+        res.render("main", {
+          errors,
+        });
+      }
+      res.render("contactDonor", {
+        donor: donor[0].firstname,
+        errors: [{ msg: "Please fill in all fields" }],
+      });
+    });
+  } else {
+    //Send email
+    Donor.find({ _id: id }, function (err, donor) {
+      console.log(errors);
+      if (err || !donor) {
+        var errors = [];
+        errors.push({ msg: "Error finding donor" });
+        res.render("main", {
+          errors,
+        });
+      }
+      console.log(donor);
+      var transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "recovery.plasma19@gmail.com",
+          pass: "PSvita12!",
+        },
+      });
+      console.log(`from: ${user.email}`);
+      var mailOptions = {
+        from: user.email,
+        to: `${donor[0].email}, ${user.email}`,
+        subject: `Plasma inquiry from ${user.name}`,
+        html: `${user.message}<br><h4>Reply to ${user.name} at ${user.email}</h4>`,
+      };
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+          req.flash(
+            "success_msg",
+            "Donor contacted, they will respond over email"
+          );
+          res.redirect("/");
+        }
+      });
+    });
+  }
 });
 
 router.delete("/logout", (req, res) => {

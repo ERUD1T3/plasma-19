@@ -1,6 +1,10 @@
 <!-- page to host map -->
 <link href="/styles/map.css" rel="stylesheet" />
 <div id="map"></div>
+<div class="text-center">
+  <%- include('./plugins/messages.ejs') %>
+</div>
+
 <div id="list-container" class="d-flex justify-content-center">
   <div
     class="list-group overflow-auto"
@@ -10,36 +14,30 @@
     <script type="text/javascript">
       var listElement = document.getElementById("list-element");
       var seekingMessage = document.createElement('h2');
-      seekingMessage.innerHTML = "Finding donors near you...<br>"+"<h4> Please make sure location is activated </h4>";
+      seekingMessage.innerHTML = "Finding donors near you...<br>" + "<h4> Please make sure location is activated </h4>";
       seekingMessage.style.color = 'white';
       listElement.appendChild(seekingMessage);
       mapboxgl.accessToken =
         "pk.eyJ1IjoicGRhbzIwMTUiLCJhIjoiY2p5ZDlqNnI4MG84NDNjcW14bzAwbXVpbSJ9.-GnGL_1vL8oZm_XHI9jSqw";
-
       var geoTracker = new mapboxgl.GeolocateControl({
         positionOptions: {
           enableHighAccuracy: true,
         },
         trackUserLocation: true,
       });
-
       var map = new mapboxgl.Map({
-          container: "map",
-          style: "mapbox://styles/mapbox/streets-v11",
-          center: [-77.034084142948, 38.909671288923],
-          zoom: 13,
-          scrollZoom: false,
-        });
-
-        map.addControl(geoTracker, "top-right");
-
-        map.on("load", function(e){
-          geoTracker.trigger();
-          geoTracker.on("geolocate", showList);
-        })
-
+        container: "map",
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [-77.034084142948, 38.909671288923],
+        zoom: 13,
+        scrollZoom: false,
+      });
+      map.addControl(geoTracker, "top-right");
+      map.on("load", function (e) {
+        geoTracker.trigger();
+        geoTracker.on("geolocate", showList);
+      })
       function showList(position) {
-
         listElement.removeChild(seekingMessage);
         console.log(position);
         var userLoc = [position.coords.longitude, position.coords.latitude];
@@ -48,15 +46,18 @@
         console.log(donors);
         var donorLoc;
         for (let i = 0; i < donors.length; i++) {
-          if (donors[i].Address.location.longitude != 0 && donors[i].Address.location.latitude != 0) {
-            donorLoc = [donors[i].Address.location.longitude, donors[i].Address.location.latitude]
-            donors[i].dstToUser = euclDst(donorLoc, userLoc);
-            console.log(i);
-            console.log(donors[i].dstToUser);
-          } else {
-            //donors[i].dstToUser = 1000000;
-            donors[i].dstToUser = "undefined";
+          if (donors[i].Address){
+            if (donors[i].Address.location.longitude != 0 && donors[i].Address.location.latitude != 0) {
+              donorLoc = [donors[i].Address.location.longitude, donors[i].Address.location.latitude]
+              donors[i].dstToUser = euclDst(donorLoc, userLoc);
+              console.log(i);
+              console.log(donors[i].dstToUser);
+            } else {
+              //donors[i].dstToUser = 1000000;
+              donors[i].dstToUser = "undefined";
+            }
           }
+
         }
         //var sortedDonors = sortDonors(donors);
         donors.sort(function (a, b) {
@@ -65,9 +66,8 @@
         console.log(donors);
         //var listElement = document.getElementById('list-element');
         for (let i = 0; i < donors.length; i++) {
-
-          if (donors[i].dstToUser != "undefined"){
-             var listItem = document.createElement('a');
+          if (donors[i].dstToUser != "undefined") {
+            var listItem = document.createElement('a');
             listItem.href = `/donors/${donors[i]._id}`; //Change # to link we would redirect to
             // listItem.classList.add("jumbotron");
             listItem.classList.add("list-group-item");
@@ -86,16 +86,11 @@
                 <div class="col-3 flex-col-reverse">
                   <h6>${donors[i].dstToUser.toPrecision(1)} mi away</h6>
                 </div>
-
               </div>
               `;
-
             listElement.appendChild(listItem);
           }
-
-
         }
-
       }
       function euclDst(donorLoc, userLoc) {
         //return (Math.sqrt(Math.pow((donorLoc[0]-userLoc[0]), 2) + Math.pow((donorLoc[1]-userPos[1]), 2)));

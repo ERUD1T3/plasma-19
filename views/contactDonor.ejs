@@ -4,8 +4,9 @@
     style="width: 50%; margin-top: 4rem;"
   >
     <div class="card-body">
-      <h5 class="card-title">Contact <%= id %></h5>
-      <form>
+      <%- include('./plugins/messages.ejs') %>
+      <h5 class="card-title">Contact <%= donor %></h5>
+      <form method="POST">
         <div class="form-group">
           <label for="firstname">Full Name</label>
           <input
@@ -19,26 +20,32 @@
           <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
         </div>
         <div class="form-group">
-          <label for="exampleFormControlInput1">Email address</label>
+          <label for="email">Email</label>
           <input
             type="email"
             class="form-control"
-            id="exampleFormControlInput1"
+            name="email"
+            id="email"
+            aria-describedby="emailHelp"
             placeholder="name@example.com"
           />
+          <small id="emailHelp" class="form-text text-muted"
+            >We'll never share your email with anyone else.</small
+          >
         </div>
 
         <div class="form-group">
           <label for="exampleFormControlTextarea1">Your Message</label>
           <textarea
             class="form-control"
+            name="message"
             id="exampleFormControlTextarea1"
             rows="3"
           ></textarea>
         </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+        <a href="/" class="card-link">Cancel</a>
       </form>
-      <button type="button" class="btn btn-primary">Send</button>
-      <a href="/" class="card-link">Cancel</a>
     </div>
   </div>
 </div>
