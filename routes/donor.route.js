@@ -1,7 +1,7 @@
 // route for user request
 const router = require("express").Router();
 const Donor = require("../model/donor");
-// const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt')
 var multiparty = require("connect-multiparty")();
 const geoDriver = require("../drivers/geoDriver");
 const fileStreamDriver = require("../drivers/fileStreamDriver");
@@ -309,6 +309,97 @@ router.delete("/logout", (req, res) => {
   res.redirect("/login");
 });
 
+router.get('/donor/update-password', (req, res) => {
+  console.log('update password')
+  res.render('updatepassword')
+})
+
+router.put('/donor/update-password', (req, res) => {
+  // var file = req.files.proofDocument;
+  // console.log(file);
+  // if (file.originalFilename == "") console.log("No file selected");
+  console.log("posting user data to db");
+  donor = req.body;
+
+  let errors = [];
+  if (!donor.password1 || !donor.password2) {
+    errors.push({
+      msg: "Please fill in all fields"
+    });
+  } else if (donor.password1 != donor.password2) {
+    errors.push({
+      msg: "Passwords must match"
+    });
+  }
+
+  if (errors.length > 0) {
+    console.log(errors);
+    res.render("update-password", {
+      errors,
+    });
+  } else {
+    try {
+
+      let logged_email = res.locals.logged_donor.email
+      Donor.getDonorByEmail(logged_email, async (error, updatedDonor) => {
+
+        if (error) {
+          console.log('Error finding donor')
+          errors.push({
+            msg: 'Error finding Donor '
+          })
+          return res.render("updatepassword", {
+            errors,
+          });
+        }
+
+        try {
+          //check old password
+          // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
+
+          await bcrypt.compare(donor.oldpassword, updatedDonor.password, async (error, isMatch) => {
+            if (isMatch) {
+
+              // return done(null, donor)
+              console.log(`Updated password: ${donor.password1}`)
+              let hash = await bcrypt.hash(donor.password1, 10)
+              console.log(`hash: ${hash}`)
+              updatedDonor.password = hash
+
+              console.log(`Update user: ${updatedDonor}`)
+              await updatedDonor.save()
+              req.flash(
+                "success_msg",
+                'Password Updated'
+              );
+              res.redirect('/')
+
+            } else {
+              console.log('Password incorrect!')
+              errors.push({
+                msg: 'Password Incorrect'
+              })
+            }
+
+          })
+        } catch (error) {
+
+        }
+
+
+
+      })
+    } catch (error) {
+      console.log('error')
+      errors.push({
+        msg: 'Error updating your profile'
+      })
+      res.render("updatepassword", {
+        errors
+      });
+    }
+  }
+})
 
 router.get('/donor/password-recovery', (req, res) => {
   // console.log('forgot password')
@@ -318,13 +409,15 @@ router.get('/donor/password-recovery', (req, res) => {
 router.post('/donor/password-recovery', (req, res) => {
   console.log('forgot password')
 
+
+  console.log(`recovery email: ${req.body.email}`)
   var errors = []
-  Donor.getDonorByEmail(req.body.email, (error, donor) => {
+  Donor.getDonorByEmail(req.body.email, async (error, updatedDonor) => {
     if (error) {
       console.log(error)
     }
 
-    if (!donor) {
+    if (!updatedDonor) {
       errors.push({
         msg: 'No Donor account with this email'
       })
@@ -335,9 +428,12 @@ router.post('/donor/password-recovery', (req, res) => {
 
       // generate temporary password
       var randomstring = Math.random().toString(36).slice(-8)
-      const emailMsg = 'Recovery Password: ' + randomstring
+      let emailMsg = 'Recovery Password: ' + randomstring
 
-      const hash = bcrypt.hash(randomstring, 10)
+      let hash = await bcrypt.hash(randomstring, 10)
+      console.log(`hash: ${hash}`)
+      updatedDonor.password = hash.toString()
+      await updatedDonor.save()
 
       var transporter = nodemailer.createTransport({
         service: "gmail",
@@ -346,17 +442,27 @@ router.post('/donor/password-recovery', (req, res) => {
           pass: "PSvita12!",
         },
       });
+      var user = {
+        email: updatedDonor.email,
+        name: `${updatedDonor.firstname} ${updatedDonor.lastname}`,
+        // message: req.body.message,
+      };
       console.log(`from: ${user.email}`);
       var mailOptions = {
         from: user.email,
-        to: `${donor.email}`,
+        to: `${updatedDonor.email}`,
         subject: `Password Recovery--Plasma-19`,
         html: `
         <br><br>
         <h3>Plasma-19 Support</h3>
         <br>
         <i> Use the password below to login and update your password</i>
+        <br>
         <b>${ emailMsg }</b>
+        <br>
+        <a href='https://plasma-19.herokuapp.com/donor/udpate-password'>
+          Upate my password
+        </a>
         <p> Plasma-19 Team </p>
         `,
       };
@@ -368,7 +474,7 @@ router.post('/donor/password-recovery', (req, res) => {
           console.log("Email sent: " + info.response);
           req.flash(
             "success_msg",
-            `Recovery password sent to ${donor.email}`
+            `Recovery password sent to ${updatedDonor.email}`
           );
           res.redirect("/");
         }
@@ -417,9 +523,11 @@ router.put("/donor/edit", multiparty, (req, res) => {
     let logged_email = res.locals.logged_donor.email
     Donor.getDonorByEmail(logged_email, (error, updatedDonor) => {
 
-      if(error) {
+      if (error) {
         console.log('Error finding donor')
-        errors.push({ msg: 'Error finding Donor '})
+        errors.push({
+          msg: 'Error finding Donor '
+        })
         return res.render("edit", {
           errors,
         });
@@ -467,14 +575,14 @@ router.put("/donor/edit", multiparty, (req, res) => {
             });
           } else {
             console.log(`Update user: ${updatedDonor}`)
-              updatedDonor.save()
-              req.flash(
-                "success_msg",
-                'Profile Updated'
-              );
-              res.redirect('/donor/edit')
+            updatedDonor.save()
+            req.flash(
+              "success_msg",
+              'Profile Updated'
+            );
+            res.redirect('/donor/edit')
           }
-          
+
         }
       });
 
