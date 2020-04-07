@@ -22,8 +22,12 @@ router.get("/", (req, res) => {
   Donor.find({}, function (err, donors) {
     if (err) throw err;
     if (!donors) {
-      errors.push({ msg: "Could not find donors" });
-      res.render("main", { errors });
+      errors.push({
+        msg: "Could not find donors"
+      });
+      res.render("main", {
+        errors
+      });
     } else {
       console.log(donors);
       res.render("main", {
@@ -56,15 +60,23 @@ router.post("/signup", multiparty, async (req, res) => {
     !donor.inputAddress ||
     !donor.city ||
     donor.state == "Choose..." ||
-    !donor.city
+    !donor.zip
   ) {
-    errors.push({ msg: "Please fill in all fields" });
+    errors.push({
+      msg: "Please fill in all fields"
+    });
   } else if (!donor.Rh) {
-    errors.push({ msg: "Please select blood type Rh" });
+    errors.push({
+      msg: "Please select blood type Rh"
+    });
   } else if (donor.password1 != donor.password2) {
-    errors.push({ msg: "Passwords must match" });
+    errors.push({
+      msg: "Passwords must match"
+    });
   } else if (file.originalFilename == "") {
-    errors.push({ msg: "The COVID-19 recovery document is required" });
+    errors.push({
+      msg: "The COVID-19 recovery document is required"
+    });
   }
 
   if (errors.length > 0) {
@@ -75,7 +87,9 @@ router.post("/signup", multiparty, async (req, res) => {
   } else {
     geoDriver.addDonorToMap(donor, function (err, donorOnMap) {
       if (err || !donorOnMap.geometry.coordinates) {
-        errors.push({ msg: "Could find address on map" });
+        errors.push({
+          msg: "Could find address on map"
+        });
         res.render("signup", {
           errors,
         });
@@ -113,8 +127,7 @@ router.post("/signup", multiparty, async (req, res) => {
               //return done(null, false, {message: 'User already exists'});
               console.log("Found email");
               errors.push({
-                msg:
-                  "This email already exists. Please sign in if you're already registered",
+                msg: "This email already exists. Please sign in if you're already registered",
               });
               res.render("signup", {
                 errors,
@@ -257,5 +270,79 @@ router.delete("/logout", (req, res) => {
   req.logout();
   res.redirect("/login");
 });
+
+router.get('/donor/edit', (req, res) => {
+  console.log('edit my user ' + req.user.firstname)
+  res.render('edit')
+})
+
+// TODO: handle password change and forgotten password
+router.get('/donor/changepassword', (req, res) => {
+  console.log('forgot password')
+  // res.render('')
+})
+
+
+router.put("/donor/edit", multiparty, async (req, res) => {
+
+
+  var file = req.files.proofDocument;
+ 
+  console.log("posting user data to db");
+  donor = req.body;
+
+  let updatedDonor = res.locals.donor
+
+  updatedDonor.firstname = donor.firstname
+  updatedDonor.lastname = donor.lastname
+  updatedDonor.Blood = `${donor.bloodType} ${donor.Rh}`
+  updatedDonor.Address = {
+    line1: donor.inputAddress,
+    line2: donor.inputAddress2,
+    city: donor.city,
+    state: donor.state,
+    zip: donor.zip
+  }
+  
+  
+  geoDriver.addDonorToMap(donor, function (err, donorOnMap) {
+    if (err || !donorOnMap.geometry.coordinates) {
+      errors.push({
+        msg: "Could find address on map"
+      });
+      res.render("edit", {
+        errors,
+      });
+    } else {
+      console.log(`New user located at: ${donorOnMap.geometry.coordinates}`);
+
+      updatedDonor.Address.location.longitude = donorOnMap.geometry.coordinates[0]
+      updatedDonor.Address.location.latitude = donorOnMap.geometry.coordinates[1]
+
+      if (file) {
+        fileStreamDriver.upload(file, function (uploadRes) {
+          console.log(uploadRes)
+          updatedDonor.document = uploadRes
+          
+        });
+      }
+    }
+  });
+
+  updatedDonor.save()
+  res.redirect('/login')
+});
+
+
+router.get("/download/:file_id/:name", function (req, res) {
+  let file_id = req.params.file_id;
+  console.log(`file id: ${file_id}`);
+  fileStreamDriver.download(file_id, res, function (downloadRes) {
+    console.log(`Download res: ${downloadRes}`);
+  });
+  // res.redirect('/donor/edit')
+});
+
+
 
 module.exports = router;

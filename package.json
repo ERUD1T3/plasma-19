@@ -4,7 +4,7 @@
   "description": "Help app connect Covid-19 positive patient to recovered patients",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "nodemon app.js",
     "test": "jest"
   },
   "repository": {
