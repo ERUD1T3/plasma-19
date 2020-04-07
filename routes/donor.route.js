@@ -160,6 +160,14 @@ router.post(
   }
 );
 
+router.get("/donors/:id", function (req, res) {
+  console.log(`Donor: ${req.params.id}`);
+  var id = req.params.id;
+  res.render("contactDonor", {
+    id,
+  });
+});
+
 router.delete("/logout", (req, res) => {
   req.logout();
   res.redirect("/login");
