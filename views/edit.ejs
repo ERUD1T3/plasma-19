@@ -16,8 +16,8 @@
                   name="firstName"
                   id="firstname"
                   aria-describedby="firstname"
-                  value="<%= locals.donor.firstname %>"
-                  placeholder="<%= locals.donor.firstname %>"
+                  value="<%= locals.logged_donor.firstname %>"
+                  placeholder="<%= locals.logged_donor.firstname %>"
                 />
                 <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
               </div>
@@ -30,8 +30,8 @@
                   name="lastName"
                   id="lastname"
                   aria-describedby="lastname"
-                  value="<%= locals.donor.lastname %>"
-                  placeholder="<%= locals.donor.lastname %>"
+                  value="<%= locals.logged_donor.lastname %>"
+                  placeholder="<%= locals.logged_donor.lastname %>"
                 />
                 <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
               </div>
@@ -45,14 +45,14 @@
                     name="bloodType"
                     id="bloodType"
                   >
-                    <option selected value="<%= locals.donor.Blood.split(' ')[0] %>"><%= locals.donor.Blood.split(' ')[0] %></option>
+                    <option selected value="<%= locals.logged_donor.Blood.split(' ')[0] %>"><%= locals.logged_donor.Blood.split(' ')[0] %></option>
                     <option value="O">O</option>
                     <option value="B">B</option>
                     <option value="A">A</option>
                     <option value="AB">AB</option>
                   </select>
   
-                  <% if(locals.donor.Blood.split(' ')[1] == 'positive') { %> 
+                  <% if(locals.logged_donor.Blood.split(' ')[1] == 'positive') { %> 
                   <div class="form-check form-check-inline">
                     <input
                       class="form-check-input"
@@ -107,8 +107,8 @@
                   class="form-control"
                   name="inputAddress"
                   id="inputAddress"
-                  placeholder="<%= locals.donor.Address.line1 %>"
-                  value="<%= locals.donor.Address.line1 %>"
+                  placeholder="<%= locals.logged_donor.Address.line1 %>"
+                  value="<%= locals.logged_donor.Address.line1 %>"
                 />
               </div>
               <div class="form-group">
@@ -118,8 +118,8 @@
                   class="form-control"
                   name="inputAddress2"
                   id="inputAddress2"
-                  placeholder="<%= locals.donor.Address.line2 %>"
-                  value="<%= locals.donor.Address.line2 %>"
+                  placeholder="<%= locals.logged_donor.Address.line2 %>"
+                  value="<%= locals.logged_donor.Address.line2 %>"
                 />
               </div>
               <div class="form-row">
@@ -130,15 +130,15 @@
                     class="form-control"
                     name="city"
                     id="inputCity"
-                    placeholder="<%= locals.donor.Address.city %>"
-                    value="<%= locals.donor.Address.city %>"
+                    placeholder="<%= locals.logged_donor.Address.city %>"
+                    value="<%= locals.logged_donor.Address.city %>"
                   />
                 </div>
                 <div class="form-group col-md-4">
                   <label for="inputState">State</label>
                   <select id="inputState" name="state" class="form-control">
-                    <option selected value="<%= locals.donor.Address.state %>">
-                        <%= locals.donor.Address.state %>
+                    <option selected value="<%= locals.logged_donor.Address.state %>">
+                        <%= locals.logged_donor.Address.state %>
                     </option>
                     <option value="AL">Alabama</option>
                     <option value="AK">Alaska</option>
@@ -200,8 +200,8 @@
                     class="form-control"
                     name="zip"
                     id="inputZip"
-                    placeholder="<%= locals.donor.Address.zip %>"
-                    value="<%= locals.donor.Address.zip %>"
+                    placeholder="<%= locals.logged_donor.Address.zip %>"
+                    value="<%= locals.logged_donor.Address.zip %>"
                   />
                 </div>
               </div>
@@ -210,8 +210,8 @@
               <br>
                 <div>
                   Current File: 
-                    <a href="/download/<%= locals.donor.document.id %>/<%= locals.donor.document.name %>" download>
-                        <%= locals.donor.document.name %>
+                    <a href="/download/<%= locals.logged_donor.document.id %>/<%= locals.logged_donor.document.name %>" download>
+                        <%= locals.logged_donor.document.name %>
                     </a>
                 </div>
                 <br>

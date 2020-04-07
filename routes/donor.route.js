@@ -18,7 +18,7 @@ router.get("/", (req, res) => {
   console.log("Root page");
   //res.send("hello world")
   var errors = [];
-  console.log(`locals ${res.locals.donor}`);
+  console.log(`locals ${res.locals.logged_donor}`);
   Donor.find({}, function (err, donors) {
     if (err) throw err;
     if (!donors) {
@@ -32,6 +32,7 @@ router.get("/", (req, res) => {
       console.log(donors);
       res.render("main", {
         donors,
+        logged_donor: req.user
       });
     }
   });
@@ -168,14 +169,14 @@ router.post(
 
     req.login(req.user, (error) => {
       if (error) return next(error);
-      // res.locals.donor = req.user
+      // res.locals.logged_donor = req.user
       res.redirect("/");
     });
   }
 );
 
 router.get("/donors/:id", function (req, res) {
-  // console.log(`Current donor ${req.locals.donor.firstname}`);
+  // console.log(`Current donor ${req.locals.logged_donor.firstname}`);
   console.log(`Donor: ${req.params.id}`);
   var id = req.params.id;
   Donor.find({ _id: id }, function (err, donor) {
@@ -291,7 +292,7 @@ router.put("/donor/edit", multiparty, async (req, res) => {
   console.log("posting user data to db");
   donor = req.body;
 
-  let updatedDonor = res.locals.donor
+  let updatedDonor = res.locals.logged_donor
 
   updatedDonor.firstname = donor.firstname
   updatedDonor.lastname = donor.lastname

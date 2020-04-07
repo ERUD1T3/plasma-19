@@ -57,8 +57,8 @@ app.use(passport.session());
 app.use(function (req, res, next) {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
-  res.locals.donor = req.user
-  // res.locals.donor = null;
+  res.locals.logged_donor = req.user
+  // res.locals.logged_donor = null;
   res.locals.error = req.flash("error");
   
   next();

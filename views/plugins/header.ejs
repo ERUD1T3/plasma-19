@@ -26,7 +26,7 @@
       <li class="nav-item">
         <a class="nav-link" href="/info/team">Contact Us</a>
       </li>
-      <% if (locals.donor) { %>
+      <% if (locals.logged_donor) { %>
       <li class="nav-item">
         <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
         <%- include('./logout.ejs')%>
@@ -48,7 +48,7 @@
     </ul>
     <div>
         <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
-        <% if (locals.donor) { %>
+        <% if (locals.logged_donor) { %>
           <li class="nav-item">
             <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
             <%- include('./profile.ejs')%>
