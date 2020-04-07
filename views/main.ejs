@@ -46,7 +46,7 @@
         console.log(donors);
         var donorLoc;
         for (let i = 0; i < donors.length; i++) {
-          if (donors[i].Address) {
+          if (donors[i].Address.location) {
             if (donors[i].Address.location.longitude != 0 && donors[i].Address.location.latitude != 0) {
               donorLoc = [donors[i].Address.location.longitude, donors[i].Address.location.latitude]
               donors[i].dstToUser = euclDst(donorLoc, userLoc);
@@ -56,6 +56,8 @@
               //donors[i].dstToUser = 1000000;
               donors[i].dstToUser = "undefined";
             }
+          } else {
+            console.log(donors[i]);
           }
         }
         //var sortedDonors = sortDonors(donors);
