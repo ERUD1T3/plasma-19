@@ -24,6 +24,7 @@ const donorSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  document: {},
 });
 
 const Donor = (module.exports = mongoose.model("Donor", donorSchema));
@@ -55,10 +56,10 @@ module.exports.createDonor = async function (newDonor, callback) {
   // });
 
   try {
-    var hash = await bcrypt.hash(newDonor.password, 10)
+    var hash = await bcrypt.hash(newDonor.password, 10);
     newDonor.password = hash; //encrypt password using hash
     await newDonor.save(callback);
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 };
