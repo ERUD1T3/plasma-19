@@ -206,9 +206,16 @@
                 </div>
               </div>
   
-              <!-- <div class="fileupload">
-                <input type="file" name="fileupload" id="fileupload">
-              </div>   -->
+              
+              <br>
+                <div>
+                  Current File: 
+                    <a href="/download/<%= locals.donor.document.id %>/<%= locals.donor.document.name %>" download>
+                        <%= locals.donor.document.name %>
+                    </a>
+                </div>
+                <br>
+
                 <div>COVID-19 recovery document (Optional)</div>
                 <div class="custom-file" style="margin-bottom: 1em">
                   <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">

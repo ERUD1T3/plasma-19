@@ -249,5 +249,15 @@ router.put("/donor/edit", multiparty, async (req, res) => {
 });
 
 
+router.get("/download/:file_id/:name", function (req, res) {
+  let file_id = req.params.file_id;
+  console.log(`file id: ${file_id}`);
+  fileStreamDriver.download(file_id, res, function (downloadRes) {
+    console.log(`Download res: ${downloadRes}`);
+  });
+  // res.redirect('/donor/edit')
+});
+
+
 
 module.exports = router;
