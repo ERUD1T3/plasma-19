@@ -158,4 +158,17 @@ router.delete("/logout", (req, res) => {
   res.redirect("/login");
 });
 
+router.get('/donor/edit', (req, res) => {
+  console.log('edit my user '+req.user.firstname)
+  res.render('edit')
+})
+
+
+
+router.put('/donor/edit', (req, res) => {
+  console.log('edit my user '+req.user.firstname)
+  // res.render('edit')
+})
+
+
 module.exports = router;

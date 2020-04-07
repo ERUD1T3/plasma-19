@@ -102,7 +102,7 @@
 
           if (donors[i].dstToUser != "undefined"){
              var listItem = document.createElement('a');
-            listItem.href = "/donors"; //Change # to link we would redirect to
+            listItem.href = `/donors/${donors[i]._id}`; //Change # to link we would redirect to
             // listItem.classList.add("jumbotron");
             listItem.classList.add("list-group-item");
             listItem.classList.add("list-group-item-action");
@@ -115,7 +115,7 @@
               </div>
               <div class="row">
                 <div class="col-9">
-                <a href="/donors/" class="btn btn-primary">Contact</a>
+                <a href="/donors/${donors[i]._id}" class="btn btn-primary">Contact</a>
                 </div>
                 <div class="col-3 flex-col-reverse">
                   <h6>${donors[i].dstToUser.toPrecision(1)} mi away</h6>
