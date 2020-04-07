@@ -157,23 +157,39 @@ router.get("/login", (req, res) => {
   res.render("login");
 });
 
-router.post(
-  "/login",
-  passport.authenticate("local", {
-    failureRedirect: "/login",
-    failureFlash: "Incorrect Password! Try again",
-  }),
-  (req, res) => {
-    console.log("successful login " + req.user.email);
-    // console.log('locals app.js %j', res.locals)
+router.post("/login", (req, res, next) => {
+  
+  passport.authenticate("local", (err, user, info) => {
+    var errors = []
+    if(err) {
+      console.log(err)
+      // errors.push({msg: "Password incorrect"})
+    }
 
-    req.login(req.user, (error) => {
-      if (error) return next(error);
+    if(!user) {
+      errors.push({msg: "Incorrect Password or Email"})
+      return res.render('login',{
+        errors
+      })
+    }
+
+    console.log("successful login " + user.email);
+    // console.log('locals app.js %j', res.locals)
+    var errors = [];
+
+    req.login(user, (error) => {
+      if (error) {
+        errors.push({msg: "Error login in"})
+        res.render("login", {
+          errors,
+        })
+        return next(error);
+      }
       // res.locals.logged_donor = req.user
       res.redirect("/");
     });
-  }
-);
+  })(req, res, next);
+});
 
 router.get("/donors/:id", function (req, res) {
   // console.log(`Current donor ${req.locals.logged_donor.firstname}`);
@@ -286,8 +302,10 @@ router.get('/donor/changepassword', (req, res) => {
 
 router.put("/donor/edit", multiparty, async (req, res) => {
 
+  var errors = []
 
-  var file = req.files.proofDocument;
+  try {
+    var file = req.files.proofDocument;
  
   console.log("posting user data to db");
   donor = req.body;
@@ -312,7 +330,7 @@ router.put("/donor/edit", multiparty, async (req, res) => {
         msg: "Could find address on map"
       });
       res.render("edit", {
-        errors,
+        errors
       });
     } else {
       console.log(`New user located at: ${donorOnMap.geometry.coordinates}`);
@@ -332,7 +350,16 @@ router.put("/donor/edit", multiparty, async (req, res) => {
 
   updatedDonor.save()
   res.redirect('/login')
+
+  } catch (error) {
+    console.log('error')
+    errors.push({msg: 'Error updating your profile'})
+    res.render("edit", {
+      errors
+    });
+  }
 });
+
 
 
 router.get("/download/:file_id/:name", function (req, res) {

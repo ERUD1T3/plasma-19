@@ -11,7 +11,7 @@ function initialize(passport) {
                 if (!donor) {
                     console.log('donor not found')
                     return done(null, false, {
-                        message: 'Donor not found'
+                        msg: 'Donor not found'
                     })
                 }
                 console.log('test of Donor retrieval');
@@ -25,7 +25,7 @@ function initialize(passport) {
                     } else {
                         console.log('Password incorrect!')
                         return done(null, false, {
-                            message: 'Password Incorrect'
+                            msg: 'Password Incorrect'
                         })
                     }
 
