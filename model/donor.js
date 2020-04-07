@@ -8,8 +8,8 @@ const donorSchema = new mongoose.Schema({
   lastname: String,
   email: String,
   password: String,
-  Blood: String, // type plus Rh so A+
-  Address: {
+  blood: String, // type plus Rh so A+
+  address: {
     line1: String,
     line2: String,
     city: String,

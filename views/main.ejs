@@ -46,9 +46,9 @@
         console.log(donors);
         var donorLoc;
         for (let i = 0; i < donors.length; i++) {
-          if (donors[i].Address.location) {
-            if (donors[i].Address.location.longitude != 0 && donors[i].Address.location.latitude != 0) {
-              donorLoc = [donors[i].Address.location.longitude, donors[i].Address.location.latitude]
+          if (donors[i].address.location) {
+            if (donors[i].address.location.longitude != 0 && donors[i].address.location.latitude != 0) {
+              donorLoc = [donors[i].address.location.longitude, donors[i].address.location.latitude]
               donors[i].dstToUser = euclDst(donorLoc, userLoc);
               console.log(i);
               console.log(donors[i].dstToUser);

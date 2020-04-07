@@ -13,7 +13,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="firstName"
+                  name="firstname"
                   id="firstname"
                   aria-describedby="firstname"
                   value="<%= locals.logged_donor.firstname %>"
@@ -27,7 +27,7 @@
                 <input
                   type="text"
                   class="form-control"
-                  name="lastName"
+                  name="lastname"
                   id="lastname"
                   aria-describedby="lastname"
                   value="<%= locals.logged_donor.lastname %>"
@@ -37,7 +37,7 @@
               </div>
   
               <div class="form-group">
-                <label for="bloodType">Blood Type</label>
+                <label for="bloodType">blood Type</label>
                 <div class="my-1">
                   <!-- <label class="mr-sm-2" for="bloodtype">Preference</label> -->
                   <select
@@ -45,14 +45,14 @@
                     name="bloodType"
                     id="bloodType"
                   >
-                    <option selected value="<%= locals.logged_donor.Blood.split(' ')[0] %>"><%= locals.logged_donor.Blood.split(' ')[0] %></option>
+                    <option selected value="<%= locals.logged_donor.blood.split(' ')[0] %>"><%= locals.logged_donor.blood.split(' ')[0] %></option>
                     <option value="O">O</option>
                     <option value="B">B</option>
                     <option value="A">A</option>
                     <option value="AB">AB</option>
                   </select>
   
-                  <% if(locals.logged_donor.Blood.split(' ')[1] == 'positive') { %> 
+                  <% if(locals.logged_donor.blood.split(' ')[1] == 'positive') { %> 
                   <div class="form-check form-check-inline">
                     <input
                       class="form-check-input"
@@ -101,25 +101,25 @@
               </div>
   
               <div class="form-group">
-                <label for="inputAddress">Address</label>
+                <label for="inputaddress">address</label>
                 <input
                   type="text"
                   class="form-control"
-                  name="inputAddress"
-                  id="inputAddress"
-                  placeholder="<%= locals.logged_donor.Address.line1 %>"
-                  value="<%= locals.logged_donor.Address.line1 %>"
+                  name="inputaddress"
+                  id="inputaddress"
+                  placeholder="<%= locals.logged_donor.address.line1 %>"
+                  value="<%= locals.logged_donor.address.line1 %>"
                 />
               </div>
               <div class="form-group">
-                <label for="inputAddress2">Address 2</label>
+                <label for="inputaddress2">address 2</label>
                 <input
                   type="text"
                   class="form-control"
-                  name="inputAddress2"
-                  id="inputAddress2"
-                  placeholder="<%= locals.logged_donor.Address.line2 %>"
-                  value="<%= locals.logged_donor.Address.line2 %>"
+                  name="inputaddress2"
+                  id="inputaddress2"
+                  placeholder="<%= locals.logged_donor.address.line2 %>"
+                  value="<%= locals.logged_donor.address.line2 %>"
                 />
               </div>
               <div class="form-row">
@@ -130,15 +130,15 @@
                     class="form-control"
                     name="city"
                     id="inputCity"
-                    placeholder="<%= locals.logged_donor.Address.city %>"
-                    value="<%= locals.logged_donor.Address.city %>"
+                    placeholder="<%= locals.logged_donor.address.city %>"
+                    value="<%= locals.logged_donor.address.city %>"
                   />
                 </div>
                 <div class="form-group col-md-4">
                   <label for="inputState">State</label>
                   <select id="inputState" name="state" class="form-control">
-                    <option selected value="<%= locals.logged_donor.Address.state %>">
-                        <%= locals.logged_donor.Address.state %>
+                    <option selected value="<%= locals.logged_donor.address.state %>">
+                        <%= locals.logged_donor.address.state %>
                     </option>
                     <option value="AL">Alabama</option>
                     <option value="AK">Alaska</option>
@@ -200,8 +200,8 @@
                     class="form-control"
                     name="zip"
                     id="inputZip"
-                    placeholder="<%= locals.logged_donor.Address.zip %>"
-                    value="<%= locals.logged_donor.Address.zip %>"
+                    placeholder="<%= locals.logged_donor.address.zip %>"
+                    value="<%= locals.logged_donor.address.zip %>"
                   />
                 </div>
               </div>

@@ -25,9 +25,9 @@ module.exports = {
     geocodingClient
       .forwardGeocode({
         query:
-          newDonor.inputAddress +
+          newDonor.inputaddress +
           " " +
-          newDonor.inputAddress2 +
+          newDonor.inputaddress2 +
           " " +
           newDonor.city +
           " " +
@@ -56,17 +56,17 @@ module.exports = {
                 type: "Feature",
                 properties: {
                   _id: id,
-                  firstname: donor.firstName,
-                  lastname: donor.lastName,
-                  email: donor.email,
-                  password: donor.password1,
-                  Blood: `${donor.bloodType} ${donor.Rh}`, // type plus Rh so A+
-                  Address: {
-                    line1: donor.inputAddress,
-                    line2: donor.inputAddress2,
-                    city: donor.city,
-                    state: donor.state,
-                    zip: donor.zip,
+                  firstname: newDonor.firstname,
+                  lastname: newDonor.lastname,
+                  email: newDonor.email,
+                  password: newDonor.password1,
+                  blood: `${newDonor.bloodType} ${newDonor.Rh}`, // type plus Rh so A+
+                  address: {
+                    line1: newDonor.inputaddress,
+                    line2: newDonor.inputaddress2,
+                    city: newDonor.city,
+                    state: newDonor.state,
+                    zip: newDonor.zip,
                   },
                 },
                 geometry: {

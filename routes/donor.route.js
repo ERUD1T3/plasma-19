@@ -52,13 +52,13 @@ router.post("/signup", multiparty, async (req, res) => {
 
   let errors = [];
   if (
-    !donor.firstName ||
-    !donor.lastName ||
+    !donor.firstname ||
+    !donor.lastname ||
     !donor.email ||
     !donor.password1 ||
     !donor.password2 ||
     donor.bloodType == "Choose..." ||
-    !donor.inputAddress ||
+    !donor.inputaddress ||
     !donor.city ||
     donor.state == "Choose..." ||
     !donor.zip
@@ -101,14 +101,14 @@ router.post("/signup", multiparty, async (req, res) => {
           console.log(uploadRes);
           var newDonor = new Donor({
             _id: donorOnMap._id,
-            firstname: donor.firstName,
-            lastname: donor.lastName,
+            firstname: donor.firstname,
+            lastname: donor.lastname,
             email: donor.email,
             password: donor.password1,
-            Blood: `${donor.bloodType} ${donor.Rh}`, // type plus Rh so A+
-            Address: {
-              line1: donor.inputAddress,
-              line2: donor.inputAddress2,
+            blood: `${donor.bloodType} ${donor.Rh}`, // type plus Rh so A+
+            address: {
+              line1: donor.inputaddress,
+              line2: donor.inputaddress2,
               city: donor.city,
               state: donor.state,
               zip: donor.zip,
@@ -137,7 +137,7 @@ router.post("/signup", multiparty, async (req, res) => {
             } else {
               Donor.createDonor(newDonor, function (err, donor) {
                 if (err) throw err;
-                console.log(`${donor.firstName} successfully registered!`);
+                console.log(`${donor.firstname} successfully registered!`);
                 req.flash(
                   "success_msg",
                   "Welcome new donor! You have successfully registered. You may now login"
@@ -158,17 +158,19 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", (req, res, next) => {
-  
+
   passport.authenticate("local", (err, user, info) => {
     var errors = []
-    if(err) {
+    if (err) {
       console.log(err)
       // errors.push({msg: "Password incorrect"})
     }
 
-    if(!user) {
-      errors.push({msg: "Incorrect Password or Email"})
-      return res.render('login',{
+    if (!user) {
+      errors.push({
+        msg: "Incorrect Password or Email"
+      })
+      return res.render('login', {
         errors
       })
     }
@@ -179,7 +181,9 @@ router.post("/login", (req, res, next) => {
 
     req.login(user, (error) => {
       if (error) {
-        errors.push({msg: "Error login in"})
+        errors.push({
+          msg: "Error login in"
+        })
         res.render("login", {
           errors,
         })
@@ -195,16 +199,20 @@ router.get("/donors/:id", function (req, res) {
   // console.log(`Current donor ${req.locals.logged_donor.firstname}`);
   console.log(`Donor: ${req.params.id}`);
   var id = req.params.id;
-  Donor.find({ _id: id }, function (err, donor) {
+  Donor.find({
+    _id: id
+  }, function (err, donor) {
     if (err || !donor) {
       var errors = [];
-      errors.push({ msg: "Error finding donor" });
+      errors.push({
+        msg: "Error finding donor"
+      });
       res.render("main", {
         errors,
       });
     }
     console.log(donor);
-    res.render("contactDonor", {
+    res.render("contactdonor", {
       donor: donor[0].firstname,
     });
   });
@@ -222,31 +230,43 @@ router.post("/donors/:id", function (req, res) {
 
   var errors = new Array();
   if (!user.email || !user.name || !user.message) {
-    errors.push({ msg: "Please fill in all fields" });
+    errors.push({
+      msg: "Please fill in all fields"
+    });
   }
 
   if (errors.length > 0) {
-    Donor.find({ _id: id }, function (err, donor) {
+    Donor.find({
+      _id: id
+    }, function (err, donor) {
       console.log(errors);
       if (err || !donor) {
         var errors = [];
-        errors.push({ msg: "Error finding donor" });
+        errors.push({
+          msg: "Error finding donor"
+        });
         res.render("main", {
           errors,
         });
       }
-      res.render("contactDonor", {
+      res.render("contactdonor", {
         donor: donor[0].firstname,
-        errors: [{ msg: "Please fill in all fields" }],
+        errors: [{
+          msg: "Please fill in all fields"
+        }],
       });
     });
   } else {
     //Send email
-    Donor.find({ _id: id }, function (err, donor) {
+    Donor.find({
+      _id: id
+    }, function (err, donor) {
       console.log(errors);
       if (err || !donor) {
         var errors = [];
-        errors.push({ msg: "Error finding donor" });
+        errors.push({
+          msg: "Error finding donor"
+        });
         res.render("main", {
           errors,
         });
@@ -283,77 +303,187 @@ router.post("/donors/:id", function (req, res) {
   }
 });
 
+
 router.delete("/logout", (req, res) => {
   req.logout();
   res.redirect("/login");
 });
+
+
+router.get('/donor/password-recovery', (req, res) => {
+  // console.log('forgot password')
+  res.render('pdrecovery')
+})
+
+router.post('/donor/password-recovery', (req, res) => {
+  console.log('forgot password')
+
+  var errors = []
+  Donor.getDonorByEmail(req.body.email, (error, donor) => {
+    if (error) {
+      console.log(error)
+    }
+
+    if (!donor) {
+      errors.push({
+        msg: 'No Donor account with this email'
+      })
+      res.render('pdrecovery', {
+        errors
+      })
+    } else {
+
+      // generate temporary password
+      var randomstring = Math.random().toString(36).slice(-8)
+      const emailMsg = 'Recovery Password: ' + randomstring
+
+      const hash = bcrypt.hash(randomstring, 10)
+
+      var transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: "recovery.plasma19@gmail.com",
+          pass: "PSvita12!",
+        },
+      });
+      console.log(`from: ${user.email}`);
+      var mailOptions = {
+        from: user.email,
+        to: `${donor.email}`,
+        subject: `Password Recovery--Plasma-19`,
+        html: `
+        <br><br>
+        <h3>Plasma-19 Support</h3>
+        <br>
+        <i> Use the password below to login and update your password</i>
+        <b>${ emailMsg }</b>
+        <p> Plasma-19 Team </p>
+        `,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+          req.flash(
+            "success_msg",
+            `Recovery password sent to ${donor.email}`
+          );
+          res.redirect("/");
+        }
+      });
+    }
+  })
+})
+
 
 router.get('/donor/edit', (req, res) => {
   console.log('edit my user ' + req.user.firstname)
   res.render('edit')
 })
 
-// TODO: handle password change and forgotten password
-router.get('/donor/changepassword', (req, res) => {
-  console.log('forgot password')
-  // res.render('')
-})
+router.put("/donor/edit", multiparty, (req, res) => {
+  var file = req.files.proofDocument;
 
-
-router.put("/donor/edit", multiparty, async (req, res) => {
-
+  console.log("posting user data to db");
+  var donor_edit = req.body;
   var errors = []
+  if (
+    !donor_edit.firstname ||
+    !donor_edit.lastname ||
+    !donor_edit.inputaddress ||
+    !donor_edit.city ||
+    !donor_edit.zip
+  ) {
+    errors.push({
+      msg: "Please fill in all fields"
+    });
+  } else if (!donor_edit.Rh) {
+    errors.push({
+      msg: "Please select blood type Rh"
+    });
+  }
+
+  if (errors.length > 0) {
+    console.log(errors);
+    return res.render("edit", {
+      errors,
+    });
+  }
 
   try {
-    var file = req.files.proofDocument;
- 
-  console.log("posting user data to db");
-  donor = req.body;
 
-  let updatedDonor = res.locals.logged_donor
+    let logged_email = res.locals.logged_donor.email
+    Donor.getDonorByEmail(logged_email, (error, updatedDonor) => {
 
-  updatedDonor.firstname = donor.firstname
-  updatedDonor.lastname = donor.lastname
-  updatedDonor.Blood = `${donor.bloodType} ${donor.Rh}`
-  updatedDonor.Address = {
-    line1: donor.inputAddress,
-    line2: donor.inputAddress2,
-    city: donor.city,
-    state: donor.state,
-    zip: donor.zip
-  }
-  
-  
-  geoDriver.addDonorToMap(donor, function (err, donorOnMap) {
-    if (err || !donorOnMap.geometry.coordinates) {
-      errors.push({
-        msg: "Could find address on map"
-      });
-      res.render("edit", {
-        errors
-      });
-    } else {
-      console.log(`New user located at: ${donorOnMap.geometry.coordinates}`);
-
-      updatedDonor.Address.location.longitude = donorOnMap.geometry.coordinates[0]
-      updatedDonor.Address.location.latitude = donorOnMap.geometry.coordinates[1]
-
-      if (file) {
-        fileStreamDriver.upload(file, function (uploadRes) {
-          console.log(uploadRes)
-          updatedDonor.document = uploadRes
-          
+      if(error) {
+        console.log('Error finding donor')
+        errors.push({ msg: 'Error finding Donor '})
+        return res.render("edit", {
+          errors,
         });
       }
-    }
-  });
 
-  updatedDonor.save()
-  res.redirect('/login')
+      // let donor = req.body
+      updatedDonor.firstname = donor_edit.firstname
+      updatedDonor.lastname = donor_edit.lastname
+      updatedDonor.blood = `${donor_edit.bloodType} ${donor_edit.Rh}`
+      updatedDonor.address = {
+        line1: donor_edit.inputaddress,
+        line2: donor_edit.inputaddress2,
+        city: donor_edit.city,
+        state: donor_edit.state,
+        zip: donor_edit.zip
+      }
 
+
+      geoDriver.addDonorToMap(donor_edit, function (err, donorOnMap) {
+        if (err || !donorOnMap.geometry.coordinates) {
+          errors.push({
+            msg: "Could find address on map"
+          });
+          res.render("edit", {
+            errors
+          });
+        } else {
+          console.log(`New user located at: ${donorOnMap.geometry.coordinates}`);
+
+          updatedDonor.address.location.longitude = donorOnMap.geometry.coordinates[0]
+          updatedDonor.address.location.latitude = donorOnMap.geometry.coordinates[1]
+
+          // console.error('file: %j', file)
+          if (file.size != 0) {
+            fileStreamDriver.upload(file, function (uploadRes) {
+              console.log(uploadRes)
+              updatedDonor.document = uploadRes
+              console.log(`Update user: ${updatedDonor}`)
+              updatedDonor.save()
+              req.flash(
+                "success_msg",
+                'Profile Updated'
+              );
+              res.redirect('/donor/edit')
+            });
+          } else {
+            console.log(`Update user: ${updatedDonor}`)
+              updatedDonor.save()
+              req.flash(
+                "success_msg",
+                'Profile Updated'
+              );
+              res.redirect('/donor/edit')
+          }
+          
+        }
+      });
+
+    })
   } catch (error) {
     console.log('error')
-    errors.push({msg: 'Error updating your profile'})
+    errors.push({
+      msg: 'Error updating your profile'
+    })
     res.render("edit", {
       errors
     });
