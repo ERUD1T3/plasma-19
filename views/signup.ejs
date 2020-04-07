@@ -7,7 +7,7 @@
         <fieldset>
           <!-- signup form -->
           <!-- <div class="col-auto"> -->
-          <form action="/signup" method="post">
+          <form action="/signup" method="post" enctype="multipart/form-data">
             <div class="form-group">
               <label for="firstname">First Name</label>
               <input
@@ -211,28 +211,11 @@
             <!-- <div class="fileupload">
               <input type="file" name="fileupload" id="fileupload">
             </div>   -->
-
-              <div class="custom-file">
-                <input type="file" class="custom-file-input" id="customFile">
-                <label class="custom-file-label" for="customFile">Choose file</label>
+              <div>COVID-19 recovery document (Optional)</div>
+              <div class="custom-file" style="margin-bottom: 1em">
+                <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">
+                <label class="custom-file-label" for="proofDocument">Choose file (Test results, hospital documents or other proof of COVID-19 recovery)</label>
               </div>
-
-            <div>
-                <input 
-                    type="hidden" 
-                    name="longitude"
-                    id="longitude"
-                    class=""
-                    value=0
-                />
-                <input 
-                    type="hidden" 
-                    name="latitude"
-                    id="latitude"
-                    class=""
-                    value=0
-                />
-            </div>
 
             <div class="text-center">
               <button
@@ -258,6 +241,26 @@
           <!-- </div> -->
         </fieldset>
       </div>
+      <script>
+         // name of the file appear on select
+          $(".custom-file-input").on("change", function () {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+          });
+
+          //File upload management
+            $('#proofDocument').on('change', function () {
+              // $('#GFG_DOWN').text(this.files[0].size + "bytes");
+              var cad_file = this.files[0];
+              console.log(cad_file);
+              // $('#print-name').text(cad_file.name);
+              // var fileSize = cad_file.size / 1024;
+              // var roundedFileSize = Math.round(fileSize * 10) / 10;
+              // $('#print-size').text(roundedFileSize + ' Kb');
+              // $('#print-data').fadeIn();
+              // $('#print-details-container').fadeIn();
+            });
+      </script>
     </div>
   </div>
 </div>
