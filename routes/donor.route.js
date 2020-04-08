@@ -1,12 +1,13 @@
 // route for user request
 const router = require("express").Router();
 const Donor = require("../model/donor");
-const bcrypt = require('bcrypt')
+const bcrypt = require("bcrypt");
 var multiparty = require("connect-multiparty")();
 const geoDriver = require("../drivers/geoDriver");
 const fileStreamDriver = require("../drivers/fileStreamDriver");
 const passport = require("passport");
 const nodemailer = require("nodemailer");
+const EARTH_RADIUS_MILES = 3963.2;
 const {
   initialize,
   checkAuthenticated,
@@ -23,16 +24,17 @@ router.get("/", (req, res) => {
     if (err) throw err;
     if (!donors) {
       errors.push({
-        msg: "Could not find donors"
+        msg: "Could not find donors",
       });
       res.render("main", {
-        errors
+        errors,
       });
     } else {
       console.log(donors);
       res.render("main", {
         donors,
-        logged_donor: req.user
+        logged_donor: req.user,
+        lastQuery: {},
       });
     }
   });
@@ -64,19 +66,19 @@ router.post("/signup", multiparty, async (req, res) => {
     !donor.zip
   ) {
     errors.push({
-      msg: "Please fill in all fields"
+      msg: "Please fill in all fields",
     });
   } else if (!donor.Rh) {
     errors.push({
-      msg: "Please select blood type Rh"
+      msg: "Please select blood type Rh",
     });
   } else if (donor.password1 != donor.password2) {
     errors.push({
-      msg: "Passwords must match"
+      msg: "Passwords must match",
     });
   } else if (file.originalFilename == "") {
     errors.push({
-      msg: "The COVID-19 recovery document is required"
+      msg: "The COVID-19 recovery document is required",
     });
   }
 
@@ -89,7 +91,7 @@ router.post("/signup", multiparty, async (req, res) => {
     geoDriver.addDonorToMap(donor, function (err, donorOnMap) {
       if (err || !donorOnMap.geometry.coordinates) {
         errors.push({
-          msg: "Could find address on map"
+          msg: "Could find address on map",
         });
         res.render("signup", {
           errors,
@@ -113,8 +115,8 @@ router.post("/signup", multiparty, async (req, res) => {
               state: donor.state,
               zip: donor.zip,
               location: {
-                longitude: donorOnMap.geometry.coordinates[0],
-                latitude: donorOnMap.geometry.coordinates[1],
+                type: "Point",
+                coordinates: donorOnMap.geometry.coordinates,
               },
             },
             document: uploadRes,
@@ -128,7 +130,8 @@ router.post("/signup", multiparty, async (req, res) => {
               //return done(null, false, {message: 'User already exists'});
               console.log("Found email");
               errors.push({
-                msg: "This email already exists. Please sign in if you're already registered",
+                msg:
+                  "This email already exists. Please sign in if you're already registered",
               });
               res.render("signup", {
                 errors,
@@ -158,21 +161,20 @@ router.get("/login", (req, res) => {
 });
 
 router.post("/login", (req, res, next) => {
-
   passport.authenticate("local", (err, user, info) => {
-    var errors = []
+    var errors = [];
     if (err) {
-      console.log(err)
+      console.log(err);
       // errors.push({msg: "Password incorrect"})
     }
 
     if (!user) {
       errors.push({
-        msg: "Incorrect Password or Email"
-      })
-      return res.render('login', {
-        errors
-      })
+        msg: "Incorrect Password or Email",
+      });
+      return res.render("login", {
+        errors,
+      });
     }
 
     console.log("successful login " + user.email);
@@ -182,11 +184,11 @@ router.post("/login", (req, res, next) => {
     req.login(user, (error) => {
       if (error) {
         errors.push({
-          msg: "Error login in"
-        })
+          msg: "Error login in",
+        });
         res.render("login", {
           errors,
-        })
+        });
         return next(error);
       }
       // res.locals.logged_donor = req.user
@@ -199,23 +201,27 @@ router.get("/donors/:id", function (req, res) {
   // console.log(`Current donor ${req.locals.logged_donor.firstname}`);
   console.log(`Donor: ${req.params.id}`);
   var id = req.params.id;
-  Donor.find({
-    _id: id
-  }, function (err, donor) {
-    if (err || !donor) {
-      var errors = [];
-      errors.push({
-        msg: "Error finding donor"
-      });
-      res.render("main", {
-        errors,
+  Donor.find(
+    {
+      _id: id,
+    },
+    function (err, donor) {
+      if (err || !donor) {
+        var errors = [];
+        errors.push({
+          msg: "Error finding donor",
+        });
+        res.render("main", {
+          errors,
+          lastQuery: {},
+        });
+      }
+      console.log(donor);
+      res.render("contactdonor", {
+        donor: donor[0].firstname,
       });
     }
-    console.log(donor);
-    res.render("contactdonor", {
-      donor: donor[0].firstname,
-    });
-  });
+  );
 });
 
 router.post("/donors/:id", function (req, res) {
@@ -231,90 +237,99 @@ router.post("/donors/:id", function (req, res) {
   var errors = new Array();
   if (!user.email || !user.name || !user.message) {
     errors.push({
-      msg: "Please fill in all fields"
+      msg: "Please fill in all fields",
     });
   }
 
   if (errors.length > 0) {
-    Donor.find({
-      _id: id
-    }, function (err, donor) {
-      console.log(errors);
-      if (err || !donor) {
-        var errors = [];
-        errors.push({
-          msg: "Error finding donor"
-        });
-        res.render("main", {
-          errors,
+    Donor.find(
+      {
+        _id: id,
+      },
+      function (err, donor) {
+        console.log(errors);
+        if (err || !donor) {
+          var errors = [];
+          errors.push({
+            msg: "Error finding donor",
+          });
+          res.render("main", {
+            errors,
+            lastQuery: {},
+          });
+        }
+        res.render("contactdonor", {
+          donor: donor[0].firstname,
+          errors: [
+            {
+              msg: "Please fill in all fields",
+            },
+          ],
         });
       }
-      res.render("contactdonor", {
-        donor: donor[0].firstname,
-        errors: [{
-          msg: "Please fill in all fields"
-        }],
-      });
-    });
+    );
   } else {
     //Send email
-    Donor.find({
-      _id: id
-    }, function (err, donor) {
-      console.log(errors);
-      if (err || !donor) {
-        var errors = [];
-        errors.push({
-          msg: "Error finding donor"
+    Donor.find(
+      {
+        _id: id,
+      },
+      function (err, donor) {
+        console.log(errors);
+        if (err || !donor) {
+          var errors = [];
+          errors.push({
+            msg: "Error finding donor",
+          });
+          res.render("main", {
+            errors,
+            lastQuery: {},
+          });
+        }
+        console.log(donor);
+        var transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: "recovery.plasma19@gmail.com",
+            pass: "PSvita12!",
+          },
         });
-        res.render("main", {
-          errors,
+        console.log(`from: ${user.email}`);
+        var mailOptions = {
+          from: user.email,
+          to: `${donor[0].email}, ${user.email}`,
+          subject: `Plasma inquiry from ${user.name}`,
+          html: `${user.message}<br><h4>Reply to ${user.name} at ${user.email}</h4>`,
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log("Email sent: " + info.response);
+            req.flash(
+              "success_msg",
+              "Donor contacted, they will respond over email"
+            );
+            res.redirect("/");
+          }
         });
       }
-      console.log(donor);
-      var transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: "recovery.plasma19@gmail.com",
-          pass: "PSvita12!",
-        },
-      });
-      console.log(`from: ${user.email}`);
-      var mailOptions = {
-        from: user.email,
-        to: `${donor[0].email}, ${user.email}`,
-        subject: `Plasma inquiry from ${user.name}`,
-        html: `${user.message}<br><h4>Reply to ${user.name} at ${user.email}</h4>`,
-      };
-
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-        } else {
-          console.log("Email sent: " + info.response);
-          req.flash(
-            "success_msg",
-            "Donor contacted, they will respond over email"
-          );
-          res.redirect("/");
-        }
-      });
-    });
+    );
   }
 });
-
 
 router.delete("/logout", (req, res) => {
   req.logout();
   res.redirect("/login");
 });
 
-router.get('/donor/update-password', (req, res) => {
-  console.log('update password')
-  res.render('updatepassword')
-})
+router.get("/donor/update-password", (req, res) => {
+  console.log("update password");
+  res.render("updatepassword");
+});
 
-router.put('/donor/update-password', (req, res) => {
+router.put("/donor/update-password", (req, res) => {
   // var file = req.files.proofDocument;
   // console.log(file);
   // if (file.originalFilename == "") console.log("No file selected");
@@ -324,11 +339,11 @@ router.put('/donor/update-password', (req, res) => {
   let errors = [];
   if (!donor.password1 || !donor.password2) {
     errors.push({
-      msg: "Please fill in all fields"
+      msg: "Please fill in all fields",
     });
   } else if (donor.password1 != donor.password2) {
     errors.push({
-      msg: "Passwords must match"
+      msg: "Passwords must match",
     });
   }
 
@@ -339,15 +354,13 @@ router.put('/donor/update-password', (req, res) => {
     });
   } else {
     try {
-
-      let logged_email = res.locals.logged_donor.email
+      let logged_email = res.locals.logged_donor.email;
       Donor.getDonorByEmail(logged_email, async (error, updatedDonor) => {
-
         if (error) {
-          console.log('Error finding donor')
+          console.log("Error finding donor");
           errors.push({
-            msg: 'Error finding Donor '
-          })
+            msg: "Error finding Donor ",
+          });
           return res.render("updatepassword", {
             errors,
           });
@@ -357,83 +370,74 @@ router.put('/donor/update-password', (req, res) => {
           //check old password
           // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
 
-          await bcrypt.compare(donor.oldpassword, updatedDonor.password, async (error, isMatch) => {
-            if (isMatch) {
+          await bcrypt.compare(
+            donor.oldpassword,
+            updatedDonor.password,
+            async (error, isMatch) => {
+              if (isMatch) {
+                // return done(null, donor)
+                console.log(`Updated password: ${donor.password1}`);
+                let hash = await bcrypt.hash(donor.password1, 10);
+                console.log(`hash: ${hash}`);
+                updatedDonor.password = hash;
 
-              // return done(null, donor)
-              console.log(`Updated password: ${donor.password1}`)
-              let hash = await bcrypt.hash(donor.password1, 10)
-              console.log(`hash: ${hash}`)
-              updatedDonor.password = hash
-
-              console.log(`Update user: ${updatedDonor}`)
-              await updatedDonor.save()
-              req.flash(
-                "success_msg",
-                'Password Updated'
-              );
-              res.redirect('/')
-
-            } else {
-              console.log('Password incorrect!')
-              errors.push({
-                msg: 'Password Incorrect'
-              })
+                console.log(`Update user: ${updatedDonor}`);
+                await updatedDonor.save();
+                req.flash("success_msg", "Password Updated");
+                res.redirect("/");
+              } else {
+                console.log("Password incorrect!");
+                errors.push({
+                  msg: "Password Incorrect",
+                });
+              }
             }
-
-          })
-        } catch (error) {
-
-        }
-
-
-
-      })
+          );
+        } catch (error) {}
+      });
     } catch (error) {
-      console.log('error')
+      console.log("error");
       errors.push({
-        msg: 'Error updating your profile'
-      })
+        msg: "Error updating your profile",
+      });
       res.render("updatepassword", {
-        errors
+        errors,
       });
     }
   }
-})
+});
 
-router.get('/donor/password-recovery', (req, res) => {
+router.get("/donor/password-recovery", (req, res) => {
   // console.log('forgot password')
-  res.render('pdrecovery')
-})
+  res.render("pdrecovery");
+});
 
-router.post('/donor/password-recovery', (req, res) => {
-  console.log('forgot password')
+router.post("/donor/password-recovery", (req, res) => {
+  console.log("forgot password");
 
-
-  console.log(`recovery email: ${req.body.email}`)
-  var errors = []
+  console.log(`recovery email: ${req.body.email}`);
+  var errors = [];
   Donor.getDonorByEmail(req.body.email, async (error, updatedDonor) => {
     if (error) {
-      console.log(error)
+      console.log(error);
     }
 
     if (!updatedDonor) {
       errors.push({
-        msg: 'No Donor account with this email'
-      })
-      res.render('pdrecovery', {
-        errors
-      })
+        msg: "No Donor account with this email",
+      });
+      res.render("pdrecovery", {
+        errors,
+      });
     } else {
-
       // generate temporary password
-      var randomstring = Math.random().toString(36).slice(-8)
-      let emailMsg = 'Recovery Password: ' + randomstring
+      var randomstring = Math.random().toString(36).slice(-8);
+      let emailMsg = "Recovery Password: " + randomstring;
 
-      let hash = await bcrypt.hash(randomstring, 10)
-      console.log(`hash: ${hash}`)
-      updatedDonor.password = hash.toString()
-      await updatedDonor.save()
+      let hash = await bcrypt.hash(randomstring, 10);
+      console.log(`hash: ${hash}`);
+      updatedDonor.password = hash.toString();
+      await updatedDonor.save();
 
       var transporter = nodemailer.createTransport({
         service: "gmail",
@@ -458,7 +462,7 @@ router.post('/donor/password-recovery', (req, res) => {
         <br>
         <i> Use the password below to login and update your password</i>
         <br>
-        <b>${ emailMsg }</b>
+        <b>${emailMsg}</b>
         <br>
         <a href='https://plasma-19.herokuapp.com/donor/udpate-password'>
           Upate my password
@@ -480,21 +484,20 @@ router.post('/donor/password-recovery', (req, res) => {
         }
       });
     }
-  })
-})
+  });
+});
 
-
-router.get('/donor/edit', (req, res) => {
-  console.log('edit my user ' + req.user.firstname)
-  res.render('edit')
-})
+router.get("/donor/edit", (req, res) => {
+  console.log("edit my user " + req.user.firstname);
+  res.render("edit");
+});
 
 router.put("/donor/edit", multiparty, (req, res) => {
   var file = req.files.proofDocument;
 
   console.log("posting user data to db");
   var donor_edit = req.body;
-  var errors = []
+  var errors = [];
   if (
     !donor_edit.firstname ||
     !donor_edit.lastname ||
@@ -503,11 +506,11 @@ router.put("/donor/edit", multiparty, (req, res) => {
     !donor_edit.zip
   ) {
     errors.push({
-      msg: "Please fill in all fields"
+      msg: "Please fill in all fields",
     });
   } else if (!donor_edit.Rh) {
     errors.push({
-      msg: "Please select blood type Rh"
+      msg: "Please select blood type Rh",
     });
   }
 
@@ -519,86 +522,77 @@ router.put("/donor/edit", multiparty, (req, res) => {
   }
 
   try {
-
-    let logged_email = res.locals.logged_donor.email
+    let logged_email = res.locals.logged_donor.email;
     Donor.getDonorByEmail(logged_email, (error, updatedDonor) => {
-
       if (error) {
-        console.log('Error finding donor')
+        console.log("Error finding donor");
         errors.push({
-          msg: 'Error finding Donor '
-        })
+          msg: "Error finding Donor ",
+        });
         return res.render("edit", {
           errors,
         });
       }
 
       // let donor = req.body
-      updatedDonor.firstname = donor_edit.firstname
-      updatedDonor.lastname = donor_edit.lastname
-      updatedDonor.blood = `${donor_edit.bloodType} ${donor_edit.Rh}`
+      updatedDonor.firstname = donor_edit.firstname;
+      updatedDonor.lastname = donor_edit.lastname;
+      updatedDonor.blood = `${donor_edit.bloodType} ${donor_edit.Rh}`;
       updatedDonor.address = {
         line1: donor_edit.inputaddress,
         line2: donor_edit.inputaddress2,
         city: donor_edit.city,
         state: donor_edit.state,
-        zip: donor_edit.zip
-      }
-
+        zip: donor_edit.zip,
+      };
 
       geoDriver.addDonorToMap(donor_edit, function (err, donorOnMap) {
         if (err || !donorOnMap.geometry.coordinates) {
           errors.push({
-            msg: "Could find address on map"
+            msg: "Could find address on map",
           });
           res.render("edit", {
-            errors
+            errors,
           });
         } else {
-          console.log(`New user located at: ${donorOnMap.geometry.coordinates}`);
+          console.log(
+            `New user located at: ${donorOnMap.geometry.coordinates}`
+          );
 
-          updatedDonor.address.location.longitude = donorOnMap.geometry.coordinates[0]
-          updatedDonor.address.location.latitude = donorOnMap.geometry.coordinates[1]
+          updatedDonor.address.location.longitude =
+            donorOnMap.geometry.coordinates[0];
+          updatedDonor.address.location.latitude =
+            donorOnMap.geometry.coordinates[1];
 
           // console.error('file: %j', file)
           if (file.size != 0) {
             fileStreamDriver.upload(file, function (uploadRes) {
-              console.log(uploadRes)
-              updatedDonor.document = uploadRes
-              console.log(`Update user: ${updatedDonor}`)
-              updatedDonor.save()
-              req.flash(
-                "success_msg",
-                'Profile Updated'
-              );
-              res.redirect('/donor/edit')
+              console.log(uploadRes);
+              updatedDonor.document = uploadRes;
+              console.log(`Update user: ${updatedDonor}`);
+              updatedDonor.save();
+              req.flash("success_msg", "Profile Updated");
+              res.redirect("/donor/edit");
             });
           } else {
-            console.log(`Update user: ${updatedDonor}`)
-            updatedDonor.save()
-            req.flash(
-              "success_msg",
-              'Profile Updated'
-            );
-            res.redirect('/donor/edit')
+            console.log(`Update user: ${updatedDonor}`);
+            updatedDonor.save();
+            req.flash("success_msg", "Profile Updated");
+            res.redirect("/donor/edit");
           }
-
         }
       });
-
-    })
+    });
   } catch (error) {
-    console.log('error')
+    console.log("error");
     errors.push({
-      msg: 'Error updating your profile'
-    })
+      msg: "Error updating your profile",
+    });
     res.render("edit", {
-      errors
+      errors,
     });
   }
 });
-
-
 
 router.get("/download/:file_id/:name", function (req, res) {
   let file_id = req.params.file_id;
@@ -609,6 +603,92 @@ router.get("/download/:file_id/:name", function (req, res) {
   // res.redirect('/donor/edit')
 });
 
-
+router.post("/", function (req, res) {
+  console.log("Finding...");
+  var coordinates = [];
+  var coordStr = req.body.position.split(",");
+  coordinates[0] = parseFloat(coordStr[0]);
+  coordinates[1] = parseFloat(coordStr[1]);
+  console.log(`Coordinates: ${coordinates}`);
+  var query = {
+    bloodType: req.body.bloodType,
+    Rh: req.body.Rh,
+    blood: `${req.body.bloodType} ${req.body.Rh}`,
+    range: parseFloat(req.body.queryRange),
+    userPos: coordinates,
+  };
+  if (query.blood == "Choose... undefined") {
+    var errors = [];
+    errors.push({ msg: "Invalid filter. Please select a blood type" });
+    res.render("main", {
+      errors,
+      donors: [],
+      lastQuery: {
+        bloodType: query.bloodType,
+        Rh: query.Rh,
+        range: query.range,
+      },
+    });
+  } else {
+    console.log(query);
+    Donor.aggregate(
+      [
+        {
+          $match: {
+            "address.location.coordinates": {
+              $geoWithin: {
+                $centerSphere: [
+                  [query.userPos[0], query.userPos[1]],
+                  query.range / EARTH_RADIUS_MILES,
+                ],
+              },
+            },
+          },
+        },
+        {
+          $match: {
+            blood: query.blood,
+          },
+        },
+      ],
+      function (err, donors) {
+        if (err || !donors) {
+          console.log(err);
+          var errors = [];
+          errors.push({ msg: "Error finding donors" });
+          res.render("main", {
+            errors,
+            lastQuery: {},
+          });
+        }
+        if (donors.length == 0) {
+          var errors = [];
+          errors.push({ msg: "No donors match your filter" });
+          res.render("main", {
+            donors,
+            errors,
+            lastQuery: {
+              bloodType: query.bloodType,
+              Rh: query.Rh,
+              range: query.range,
+            },
+          });
+        } else {
+          console.log("Found donors!");
+          console.log(donors);
+          console.log(`Found: ${donors.length}`);
+          res.render("main", {
+            donors,
+            lastQuery: {
+              bloodType: query.bloodType,
+              Rh: query.Rh,
+              range: query.range,
+            },
+          });
+        }
+      }
+    );
+  }
+});
 
 module.exports = router;

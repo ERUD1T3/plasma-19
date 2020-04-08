@@ -7,98 +7,241 @@
 
 <div id="list-container" class="d-flex justify-content-center">
   <div
+    class="card bg-dark"
+    id="filter-ctrl"
+    style="width: 18rem; margin-top: 4em; margin-right: 1em; color: #9ea1a4;"
+  >
+    <div class="card-body">
+      <h5 class="card-title">Filter results</h5>
+      <form method="POST">
+        <div class="d-none">
+          <input type="text" id="position" name="position" />
+        </div>
+        <div class="form-group">
+          <label for="bloodType">Blood Type</label>
+          <div class="my-1">
+            <!-- <label class="mr-sm-2" for="bloodtype">Preference</label> -->
+            <select
+              class="custom-select mr-sm-2 bg-dark"
+              name="bloodType"
+              id="bloodType"
+            >
+              <option selected>Choose...</option>
+              <option value="O">O</option>
+              <option value="B">B</option>
+              <option value="A">A</option>
+              <option value="AB">AB</option>
+            </select>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="Rh"
+              id="Rhp"
+              value="positive"
+            />
+            <label class="form-check-label" for="Rhp">+ (Rh)</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input bg-dark"
+              type="radio"
+              name="Rh"
+              id="Rhn"
+              value="negative"
+            />
+            <label class="form-check-label" for="Rhn">- (Rh)</label>
+          </div>
+          <div class="form-group" style="margin-top: 1em;">
+            <label for="customRange1">Range</label>
+            <input
+              type="range"
+              class="custom-range"
+              name="queryRange"
+              id="queryRange"
+            />
+            <div id="rangeValue"></div>
+          </div>
+
+          <div class="d-flex justify-content-center">
+            <button type="submit" class="btn btn-primary">
+              Find
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="card" id="donors-card" style="width: 50%; margin-top: 4em;">
+    <div class="card-header" id="card-header">
+      <!-- <h2>Donors near you</h2> -->
+    </div>
+    <div
+      class="list-group overflow-auto"
+      id="list-element"
+      style="height: 400px;"
+    ></div>
+  </div>
+  <!-- <div
     class="list-group overflow-auto"
     style="height: 400px; width: 50%; margin-top: 4em;"
     id="list-element"
-  >
-    <script type="text/javascript">
-      var listElement = document.getElementById("list-element");
-      var seekingMessage = document.createElement('h2');
-      seekingMessage.innerHTML = "Finding donors near you...<br>" + "<h4> Please make sure location is activated </h4>";
-      seekingMessage.style.color = 'white';
-      listElement.appendChild(seekingMessage);
-      mapboxgl.accessToken =
-        "pk.eyJ1IjoicGRhbzIwMTUiLCJhIjoiY2p5ZDlqNnI4MG84NDNjcW14bzAwbXVpbSJ9.-GnGL_1vL8oZm_XHI9jSqw";
-      var geoTracker = new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true,
-        },
-        trackUserLocation: true,
-      });
-      var map = new mapboxgl.Map({
-        container: "map",
-        style: "mapbox://styles/mapbox/streets-v11",
-        center: [-77.034084142948, 38.909671288923],
-        zoom: 13,
-        scrollZoom: false,
-      });
-      map.addControl(geoTracker, "top-right");
-      map.on("load", function (e) {
-        geoTracker.trigger();
-        geoTracker.on("geolocate", showList);
-      })
-      function showList(position) {
-        listElement.removeChild(seekingMessage);
-        console.log(position);
-        var userLoc = [position.coords.longitude, position.coords.latitude];
-        console.log(position.coords.latitude, position.coords.longitude);
-        var donors = <%- JSON.stringify(donors) %>;
-        console.log(donors);
-        var donorLoc;
-        for (let i = 0; i < donors.length; i++) {
-          if (donors[i].address.location) {
-            if (donors[i].address.location.longitude != 0 && donors[i].address.location.latitude != 0) {
-              donorLoc = [donors[i].address.location.longitude, donors[i].address.location.latitude]
-              donors[i].dstToUser = euclDst(donorLoc, userLoc);
-              console.log(i);
-              console.log(donors[i].dstToUser);
-            } else {
-              //donors[i].dstToUser = 1000000;
-              donors[i].dstToUser = "undefined";
-            }
-          } else {
-            console.log(donors[i]);
-          }
-        }
-        //var sortedDonors = sortDonors(donors);
-        donors.sort(function (a, b) {
-          return a.dstToUser - b.dstToUser;
-        })
-        console.log(donors);
-        //var listElement = document.getElementById('list-element');
-        for (let i = 0; i < donors.length; i++) {
-          if (donors[i].dstToUser != "undefined") {
-            var listItem = document.createElement('a');
-            listItem.href = `/donors/${donors[i]._id}`; //Change # to link we would redirect to
-            // listItem.classList.add("jumbotron");
-            listItem.classList.add("list-group-item");
-            listItem.classList.add("list-group-item-action");
-            listItem.classList.add("list-group-item-dark");
-            listItem.innerHTML = `
-              <div class="row">
-                <div class="col-8">
-                <h3> ${donors[i].firstname} </h3>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-9">
-                <a href="/donors/${donors[i]._id}" class="btn btn-primary">Contact</a>
-                </div>
-                <div class="col-3 flex-col-reverse">
-                  <h6>${donors[i].dstToUser.toPrecision(1)} mi away</h6>
-                </div>
-              </div>
-              `;
-            listElement.appendChild(listItem);
-          }
-        }
+  ></div> -->
+  <script type="text/javascript">
+     $("#filter-ctrl").hide(); // hide filter control until geolocalized
+     //$("#donors-card").hide();
+     var listElement = document.getElementById("list-element");
+     var cardHeader = document.getElementById("card-header");
+     var seekingMessage = document.createElement('h2');
+     seekingMessage.innerHTML = "Finding donors near you...<br>" + "<h4> Please make sure location is activated </h4>";
+     seekingMessage.style.color = 'white';
+     //listElement.appendChild(seekingMessage);
+     seekingMessage.style.color = 'black';
+     cardHeader.appendChild(seekingMessage)
+     mapboxgl.accessToken =
+       "pk.eyJ1IjoicGRhbzIwMTUiLCJhIjoiY2p5ZDlqNnI4MG84NDNjcW14bzAwbXVpbSJ9.-GnGL_1vL8oZm_XHI9jSqw";
+     var geoTracker = new mapboxgl.GeolocateControl({
+       positionOptions: {
+         enableHighAccuracy: true,
+       },
+       trackUserLocation: true,
+     });
+     var map = new mapboxgl.Map({
+       container: "map",
+       style: "mapbox://styles/mapbox/streets-v11",
+       center: [-77.034084142948, 38.909671288923],
+       zoom: 13,
+       scrollZoom: false,
+     });
+     map.addControl(geoTracker, "top-right");
+     map.on("load", function (e) {
+       geoTracker.trigger();
+       geoTracker.on("geolocate", showList);
+     })
+     function showList(position) {
+      $("#filter-ctrl").show(); //Show filter controls when geolocalized
+      //$("#donors-card").show();
+       //listElement.removeChild(seekingMessage);
+       cardHeader.innerHTML = "<h2>Donors near you:</h2>";
+       //cardHeader.removeChild(seekingMessage);
+       console.log(position);
+       var userLoc = [position.coords.longitude, position.coords.latitude];
+       //document.getElementById("position").val(userLoc);
+       $("#position").val(userLoc);
+       //posElement.val(userLoc);
+       console.log(position.coords.latitude, position.coords.longitude);
+       var donors = <%- JSON.stringify(donors) %>;
+       if (donors.length == 0){
+         console.log("No donors");
+         seekingMessage.innerHTML = "Sorry, no donors match your filter";
+         //listElement.appendChild(seekingMessage);
+         cardHeader.appendChild(seekingMessage);
+       } else {
+         console.log(donors);
+         var donorLoc;
+         for (let i = 0; i < donors.length; i++) {
+           if (donors[i].address.location) {
+             if (donors[i].address.location.coordinates[0] != 0 && donors[i].address.location.coordinates[1] != 0) {
+               donorLoc = [donors[i].address.location.coordinates[0], donors[i].address.location.coordinates[1]]
+               donors[i].dstToUser = dstOnEarth(donorLoc, userLoc, "M");
+               console.log(i);
+               console.log(donors[i].dstToUser);
+             } else {
+               //donors[i].dstToUser = 1000000;
+               donors[i].dstToUser = "undefined";
+             }
+           } else {
+             console.log(donors[i]);
+           }
+         }
+         //var sortedDonors = sortDonors(donors);
+         donors.sort(function (a, b) {
+           return a.dstToUser - b.dstToUser;
+         })
+         console.log(donors);
+         //var listElement = document.getElementById('list-element');
+         for (let i = 0; i < donors.length; i++) {
+           if (donors[i].dstToUser != "undefined") {
+             var listItem = document.createElement('a');
+             listItem.href = `/donors/${donors[i]._id}`; //Change # to link we would redirect to
+             // listItem.classList.add("jumbotron");
+             listItem.classList.add("list-group-item");
+             listItem.classList.add("list-group-item-action");
+             listItem.classList.add("list-group-item-dark");
+             listItem.innerHTML = `
+             <div class="row">
+               <div class="col-8">
+               <h3> ${donors[i].firstname} </h3>
+               </div>
+             </div>
+             <div class="row">
+               <div class="col-9">
+               <a href="/donors/${donors[i]._id}" class="btn btn-primary">Contact</a>
+               </div>
+               <div class="col-3 flex-col-reverse">
+                 <h6>${donors[i].dstToUser.toPrecision(3)} mi away</h6>
+               </div>
+             </div>
+             `;
+             listElement.appendChild(listItem);
+           }
+         }
+       }
+
+     }
+
+    function dstOnEarth(donorLoc, userLoc, unit) {
+       var lon1 = donorLoc[0];
+       var lon2 = userLoc[0];
+       var lat1 = donorLoc[1];
+       var lat2 = userLoc[1];
+       if ((lat1 == lat2) && (lon1 == lon2)) {
+         return 0;
+       }
+       else {
+         var radlat1 = Math.PI * lat1 / 180;
+         var radlat2 = Math.PI * lat2 / 180;
+         var theta = lon1 - lon2;
+         var radtheta = Math.PI * theta / 180;
+         var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+         if (dist > 1) {
+           dist = 1;
+         }
+         dist = Math.acos(dist);
+         dist = dist * 180 / Math.PI;
+         dist = dist * 60 * 1.1515;
+         if (unit == "K") { dist = dist * 1.609344 }
+         if (unit == "N") { dist = dist * 0.8684 }
+         return dist;
+       }
+     }
+     var output = document.getElementById('rangeValue');
+     var slider = document.getElementById("queryRange");
+     var bloodType = document.getElementById('bloodType');
+     var Rh = document.getElementsByName('Rh')
+     var lastQuery = <%- JSON.stringify(lastQuery) %>
+     console.log(`lastQuery ${lastQuery[0]}`);
+     console.log(lastQuery);
+     if (lastQuery != {}){
+      var lastQuery = <%- JSON.stringify(lastQuery) %>;
+      slider.value = lastQuery.range ? lastQuery.range : 50;
+      bloodType.value = lastQuery.bloodType ? lastQuery.bloodType: 'Choose...';
+      if (lastQuery.Rh == "positive"){
+        document.getElementById('Rhp').checked = true;
+      } else if (lastQuery.Rh == "negative"){
+        document.getElementById('Rhn').checked = true;
       }
-      function euclDst(donorLoc, userLoc) {
-        //return (Math.sqrt(Math.pow((donorLoc[0]-userLoc[0]), 2) + Math.pow((donorLoc[1]-userPos[1]), 2)));
-        return Math.sqrt(
-          (donorLoc[0] - userLoc[0]) * (donorLoc[0] - userLoc[0]) + (donorLoc[1] - userLoc[1]) * (donorLoc[1] - userLoc[1])
-        );
-      }
-    </script>
-  </div>
+     } else {
+       console.log("Last query undefined");
+       slider.value = 50;
+     }
+
+    output.innerHTML = slider.value + " mi"; // Display the default slider value
+
+       // Update the current slider value (each time you drag the slider handle)
+       slider.oninput = function () {
+         output.innerHTML = this.value+" mi";
+       }
+  </script>
 </div>

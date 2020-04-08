@@ -3,6 +3,8 @@
 const mongoose = require("mongoose");
 var bcrypt = require("bcryptjs"); //to encrypt password
 
+const PointSchema = require("./coordPoint").schema;
+
 const donorSchema = new mongoose.Schema({
   firstname: String,
   lastname: String,
@@ -15,10 +17,7 @@ const donorSchema = new mongoose.Schema({
     city: String,
     state: String,
     zip: String,
-    location: {
-      longitude: Number,
-      latitude: Number,
-    },
+    location: PointSchema,
   },
   date: {
     type: Date,
