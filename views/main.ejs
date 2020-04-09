@@ -137,6 +137,7 @@
          //var listElement = document.getElementById('list-element');
          for (let i = 0; i < donors.length; i++) {
            if (donors[i].dstToUser != "undefined") {
+            var bloodpair = donors[i].blood.split(' ')
              var listItem = document.createElement('a');
              listItem.href = `/donors/${donors[i]._id}`; //Change # to link we would redirect to
              // listItem.classList.add("jumbotron");
@@ -145,8 +146,11 @@
              listItem.classList.add("list-group-item-dark");
              listItem.innerHTML = `
                 <div class="row">
-                  <div class="col-8">
-                  <h3> ${donors[i].firstname} </h3>
+                  <div class="col-9">
+                  <h3> ${donors[i].firstname} ${donors[i].lastname}</h3>
+                  </div>
+                  <div class="col-3 flex-col-reverse">
+                    <h6><i>${(bloodpair[1] == 'positive')?bloodpair[0] + ' +':bloodpair[0] + ' -'}</i></h6>
                   </div>
                 </div>
                 <div class="row">
