@@ -1,34 +1,41 @@
 // main file for the app
 "use strict";
-require("dotenv").config();
-
 const express = require("express");
 const mongoose = require("mongoose");
 const layouts = require("express-ejs-layouts");
 const bodyParser = require("body-parser");
 const passport = require("passport");
-var cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 const flash = require("connect-flash"); //for sending messages on redirect
 const session = require("express-session");
 const methodOverride = require('method-override')
-const morgan = require('morgan')
 const app = express();
 const server = require("http").Server(app);
 
 /* At the top, with other redirect methods before other routes */
-app.get('*',function(req,res,next){
+
+if (process.env.NODE_ENV !== 'production') {
+  // loading environment variable when not in production
+  require('dotenv').config()
+  const morgan = require('morgan')
+  app.use(morgan('dev')) // logging requests to server
+
+
+} else {
+  app.get('*',function(req,res,next){
   if(req.headers['x-forwarded-proto']!='https')
     res.redirect('https://plasma-19.com'+req.url)
   else
     next() /* Continue to other routes if we're not redirecting */
 })
+}
+
 
 // settings
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views/");
 app.set("layout", "root/layout"); // not a file path; does a lookpu
 
-app.use(morgan('dev'))
 app.use(layouts);
 app.use(express.static(__dirname + "/public")); // serving frontend file; index.html is starting point
 app.use(cookieParser());
