@@ -3,6 +3,12 @@
     <div class="col-md-6 mx-auto">
       <div class="card card-body">
         <h3 class="text-center mb-4">Sign-up</h3>
+        
+        <h4 class="text-warning">
+          <img src="https://img.icons8.com/office/80/000000/error.png" style="width: 1em;"/>
+          ONLY PEOPLE WHO RECOVERED FROM COVID-19 SHOULD REGISTER AS DONORS
+        </h4>
+          <br>
         <%- include('./plugins/messages.ejs') %>
         <fieldset>
           <!-- signup form -->
@@ -211,12 +217,14 @@
             <!-- <div class="fileupload">
               <input type="file" name="fileupload" id="fileupload">
             </div>   -->
-              <div>COVID-19 recovery document (Optional)</div>
+              <div>COVID-19 Recovery Proof</div>
               <div class="custom-file" style="margin-bottom: 1em">
                 <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">
-                <label class="custom-file-label" for="proofDocument">Choose file (Test results, hospital documents or other proof of COVID-19 recovery)</label>
+                <label class="custom-file-label" for="proofDocument">Upload Document</label>
+                <small class="form-text text-muted">Test results, hospital documents or other proof of COVID-19 recovery</small>
               </div>
 
+            <br><br>
             <div class="text-center">
               <button
                 class="btn btn-primary"
