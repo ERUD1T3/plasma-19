@@ -4,48 +4,24 @@
 <div class="text-center">
   <%- include('./plugins/messages.ejs') %>
 </div>
-
-<!-- <br>
-<div 
-  class="text-light d-flex justify-content-center overflow-auto"
-  
-    style="text-align: center;"
-  >
-  <h1>
-    <i>
-    Donors near you...
-    </i>
-  </h1>
-</div> -->
-
-<div id="list-container" class="d-flex justify-content-center">
-  <div
-    class="card shadow-lg p-3 mb-5 rounded"
-    id="filter-ctrl"
-    style="
-      width: 18rem;
-      margin-top: 4em;
-      margin-right: 1em;
+<div class="d-flex justify-content-center" style="margin-top: 3em">
+<div class="row" style="width: 80%">
+  <div class="col-sm-6">
+    <div class="card shadow-lg p-3 rounded" style="
       color: #9ea1a4;
       background-color: #3c4349;
-    "
-  >
-    <div class="card-body">
-      <h5 class="card-title">Filter results</h5>
-      <form method="POST">
-        <div class="d-none">
-          <input type="text" id="position" name="position" />
-        </div>
-        <div class="form-group">
+     
+    ">
+      <div class="card-body">
+        <h5 class="card-title">Filter results</h5>
+        <form method="POST">
+          <div class="d-none">
+            <input type="text" id="position" name="position" />
+          </div>
+          <!-- BloodType -->
           <label for="bloodType">Blood Type</label>
           <div class="my-1">
-            <!-- <label class="mr-sm-2" for="bloodtype">Preference</label> -->
-            <select
-              class="custom-select mr-sm-2 bg-dark"
-              name="bloodType"
-              id="bloodType"
-              style="color: #9ea1a4;"
-            >
+            <select class="custom-select mr-sm-2 bg-dark" name="bloodType" id="bloodType" style="color: #9ea1a4;">
               <option selected>Choose...</option>
               <option value="O">O</option>
               <option value="B">B</option>
@@ -53,74 +29,53 @@
               <option value="AB">AB</option>
             </select>
           </div>
+          <!-- Rh positive -->
           <div class="form-check form-check-inline">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="Rh"
-              id="Rhp"
-              value="positive"
-            />
+            <input class="form-check-input" type="radio" name="Rh" id="Rhp" value="positive" />
             <label class="form-check-label" for="Rhp">+ (Rh)</label>
           </div>
+          <!-- Rh negative -->
           <div class="form-check form-check-inline">
-            <input
-              class="form-check-input bg-dark"
-              type="radio"
-              name="Rh"
-              id="Rhn"
-              value="negative"
-            />
+            <input class="form-check-input bg-dark" type="radio" name="Rh" id="Rhn" value="negative" />
             <label class="form-check-label" for="Rhn">- (Rh)</label>
           </div>
           <br />
+          <!-- Range -->
           <div class="form-group" style="margin-top: 1em;">
             <label for="customRange1">Range</label>
-            <input
-              type="range"
-              class="custom-range"
-              name="queryRange"
-              id="queryRange"
-            />
+            <input type="range" class="custom-range" name="queryRange" id="queryRange" />
             <div id="rangeValue"></div>
           </div>
-
           <br />
+          <!-- Buttons -->
           <div class="form-group row" style="margin-left: 1em;">
             <div class="d-flex justify-content-center">
               <a href="/" class="btn btn-outline-secondary">
                 Reset
               </a>
             </div>
-
-            <div
-              class="d-flex justify-content-center"
-              style="margin-left: 1em;"
-            >
+            <div class="d-flex justify-content-center" style="margin-left: 1em;">
               <button type="submit" class="btn btn-primary">
                 Apply Filter
               </button>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
-  <div class="card" id="donors-card" style="width: 50%; margin-top: 4em;">
-    <div class="card-header" id="card-header">
-      <!-- <h2>Donors near you</h2> -->
+  <!-- Data card -->
+  <div class="col-sm-6">
+    <div class="card" id="donors-card">
+      <div class="card-header" id="card-header">
+        <!-- <h2>Donors near you</h2> -->
+      </div>
+      <div class="list-group overflow-auto" id="list-element" style="height: 400px;"></div>
     </div>
-    <div
-      class="list-group overflow-auto"
-      id="list-element"
-      style="height: 400px;"
-    ></div>
   </div>
-  <!-- <div
-    class="list-group overflow-auto"
-    style="height: 400px; width: 50%; margin-top: 2em;"
-    id="list-element"
-  ></div> -->
+</div>
+</div>
+
   <script type="text/javascript">
      $("#filter-ctrl").hide(); // hide filter control until geolocalized
      //$("#donors-card").hide();
@@ -256,6 +211,7 @@
      output.innerHTML = slider.value + " mi"; // Display the default slider value
      // Update the current slider value (each time you drag the slider handle)
      slider.oninput = function () {
+       console.log(this.value);
        output.innerHTML = this.value + " mi";
      }
   </script>
