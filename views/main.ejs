@@ -18,8 +18,15 @@
           <div class="d-none">
             <input type="text" id="position" name="position" />
           </div>
+          <!-- Range -->
+          <div class="form-group" style="margin-top: 1em;">
+            <label for="customRange1">Search Range</label>
+            <input type="range" class="custom-range" name="queryRange" id="queryRange" />
+            <div id="rangeValue"></div>
+          </div>
+          
           <!-- BloodType -->
-          <label for="bloodType">Blood Type</label>
+          <label for="bloodType">Entery Blood Type</label>
           <div class="my-1">
             <select class="custom-select mr-sm-2 bg-dark" name="bloodType" id="bloodType" style="color: #9ea1a4;">
               <option selected>Choose...</option>
@@ -31,22 +38,26 @@
           </div>
           <!-- Rh positive -->
           <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="Rh" id="Rhp" value="positive" />
+            <input class="form-check-input" type="radio" name="Rh" id="Rhp" value="positive"/>
             <label class="form-check-label" for="Rhp">+ (Rh)</label>
           </div>
           <!-- Rh negative -->
           <div class="form-check form-check-inline">
-            <input class="form-check-input bg-dark" type="radio" name="Rh" id="Rhn" value="negative" />
+            <input class="form-check-input" type="radio" name="Rh" id="Rhn" value="negative" />
             <label class="form-check-label" for="Rhn">- (Rh)</label>
           </div>
           <br />
-          <!-- Range -->
-          <div class="form-group" style="margin-top: 1em;">
-            <label for="customRange1">Range</label>
-            <input type="range" class="custom-range" name="queryRange" id="queryRange" />
-            <div id="rangeValue"></div>
+
+          <br>
+          <div class="custom-control custom-checkbox my-1 mr-sm-2">
+            <input type="checkbox" class="custom-control-input" id="specBlood" name="isSpecSearch" value="true">
+            <label class="custom-control-label" for="specBlood">
+              Find Donors of entered Blood Type
+              <br>(Not compatible Donors)
+            </label>
           </div>
-          <br />
+          <br>
+          
           <!-- Buttons -->
           <div class="form-group row" style="margin-left: 1em;">
             <div class="d-flex justify-content-center">
@@ -94,35 +105,6 @@
      }
      getLocation();
 
-    function getCompatibleBlood(myBlood) {
-    
-      if(myBlood === 'AB positive') {
-        return ['AB positive',  'A positive', 'B positive',  'O positve', 
-        'AB negative','A negative','B negative','O negative']
-      } else 
-      if(myBlood === 'AB negative') {
-        return ['AB negative','A negative','B negative','O negative']
-      } else 
-      if(myBlood === 'A positive') {
-        return ['A positive',  'O positve', 'A negative','O negative']
-      } else 
-      if(myBlood === 'A negative') {
-        return ['A negative','O negative']
-      } else 
-      if(myBlood === 'B positive') {
-        return ['B positive',  'O positve','B negative','O negative']
-      } else
-      if(myBlood === 'B negative') {
-        return ['B negative','O negative']
-      } else
-      if(myBlood === 'O positive') {
-        return ['O positive','O negative']
-      } else 
-      if(myBlood === 'O negative') {
-        return ['O negative']
-      }
-    }
-
      function showList(position) {
        $("#filter-ctrl").show(); //Show filter controls when geolocalized
        //$("#donors-card").show();
@@ -138,7 +120,7 @@
        var donors = <%- JSON.stringify(donors) %>;
        if (donors.length == 0) {
          console.log("No donors");
-         seekingMessage.innerHTML = "Sorry, no donors match your filter";
+         seekingMessage.innerHTML = "Sorry, no Donors match your filter";
          //listElement.appendChild(seekingMessage);
          cardHeader.appendChild(seekingMessage);
        } else {

@@ -7,6 +7,7 @@ const geoDriver = require("../drivers/geoDriver");
 const fileStreamDriver = require("../drivers/fileStreamDriver");
 const passport = require("passport");
 const nodemailer = require("nodemailer");
+const getCompatibleBlood = require('../utils/compatibleBlood')
 const EARTH_RADIUS_MILES = 3963.2;
 const {
   initialize,
@@ -617,9 +618,13 @@ router.post("/", function (req, res) {
     range: parseFloat(req.body.queryRange),
     userPos: coordinates,
   };
-  if (query.blood == "Choose... undefined") {
+
+  // console.log(`query.blood = ${query.blood}`)
+  if (query.blood.split(' ')[0] == "Choose..." ||
+    query.blood.split(' ')[1] == "undefined"
+  ) {
     var errors = [];
-    errors.push({ msg: "Invalid filter. Please select a blood type" });
+    errors.push({ msg: "Invalid filter. Add a Blood Type and an Rh" });
     res.render("main", {
       errors,
       donors: [],
@@ -631,6 +636,7 @@ router.post("/", function (req, res) {
     });
   } else {
     console.log(query);
+    if(req.body.isSpecSearch == 'true') {
     Donor.aggregate(
       [
         {
@@ -663,7 +669,7 @@ router.post("/", function (req, res) {
         }
         if (donors.length == 0) {
           var errors = [];
-          errors.push({ msg: "No donors match your filter" });
+          errors.push({ msg: "No Donors match your filter" });
           res.render("main", {
             donors,
             errors,
@@ -688,6 +694,69 @@ router.post("/", function (req, res) {
         }
       }
     );
+    } else { // it is a compatibility search
+      let compBloods = getCompatibleBlood(query.blood);
+      console.log(`Compatible bloods ${compBloods}`)
+      Donor.aggregate(
+        [
+          {
+            $match: {
+              "address.location.coordinates": {
+                $geoWithin: {
+                  $centerSphere: [
+                    [query.userPos[0], query.userPos[1]],
+                    query.range / EARTH_RADIUS_MILES,
+                  ],
+                },
+              },
+            },
+          },
+          {
+            $match: {
+              blood: {
+                $in: compBloods
+              }
+            },
+          },
+        ],
+        function (err, donors) {
+          if (err || !donors) {
+            console.log(err);
+            var errors = [];
+            errors.push({ msg: "Error finding donors" });
+            res.render("main", {
+              errors,
+              lastQuery: {},
+            });
+          }
+          if (donors.length == 0) {
+            var errors = [];
+            errors.push({ msg: "No Donors match your filter" });
+            res.render("main", {
+              donors,
+              errors,
+              lastQuery: {
+                bloodType: query.bloodType,
+                Rh: query.Rh,
+                range: query.range,
+              },
+            });
+          } else {
+            console.log("Found donors!");
+            console.log(donors);
+            console.log(`Found: ${donors.length}`);
+            res.render("main", {
+              donors,
+              lastQuery: {
+                bloodType: query.bloodType,
+                Rh: query.Rh,
+                range: query.range,
+              },
+            });
+          }
+        }
+      );
+    }
   }
 });
 
