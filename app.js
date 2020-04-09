@@ -15,6 +15,14 @@ const morgan = require('morgan')
 const app = express();
 const server = require("http").Server(app);
 
+/* At the top, with other redirect methods before other routes */
+app.get('*',function(req,res,next){
+  if(req.headers['x-forwarded-proto']!='https')
+    res.redirect('https://plasma-19.com'+req.url)
+  else
+    next() /* Continue to other routes if we're not redirecting */
+})
+
 // settings
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views/");
