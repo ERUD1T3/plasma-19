@@ -1,10 +1,32 @@
 <div id="list-container" class="d-flex justify-content-center">
-  <div class="card shadow p-3 bg-white rounded" style="margin-top: 4rem;">
+  <div
+    class="card shadow p-1 bg-white rounded"
+    style="
+      margin-top: 4rem;
+      width: 50rem;
+      margin-left: 1rem;
+      margin-right: 1rem;
+    "
+  >
     <div class="card-body">
       <%- include('./plugins/messages.ejs') %>
-      <h5 class="card-title">Contact <%= donor %></h5>
+      <h5 class="card-title">
+        Contact <%= donor.firstname %> <%= donor.lastname %>
+      </h5>
+      <h6 class="card-subtitle text-muted">
+        <br />
+        <% var blood = donor.blood.split(" ") %> <% if (blood[1] == "positive"){
+        %> <% var bloodToShow = blood[0]+" "+"+"; %> <% } else { %> <% var
+        bloodToShow = blood[0]+" "+"-"; %> <% } %> (<%= bloodToShow %>)
+        <b> | </b>
+        <!-- <br /> -->
+        <%= donor.address.city %>, <%= donor.address.state %> (<%= donor.dst %>
+        mi away)
+      </h6>
+      <!-- <div style="margin-top: -2.3em;"></div> -->
+
       <form method="POST">
-        <div class="form-group">
+        <div class="form-group" style="margin-top: 2em;">
           <label for="firstname">Full Name</label>
           <input
             type="text"
@@ -37,7 +59,7 @@
             class="form-control"
             name="message"
             id="exampleFormControlTextarea1"
-            rows="3"
+            rows="6"
           ></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
