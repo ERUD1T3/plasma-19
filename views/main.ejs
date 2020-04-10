@@ -126,12 +126,12 @@
        //listElement.removeChild(seekingMessage);
        cardHeader.innerHTML = "<h2>Donors found near you:</h2>";
        //cardHeader.removeChild(seekingMessage);
-       console.log(position);
+      //  console.log(position);
        var userLoc = [position.coords.longitude, position.coords.latitude];
        //document.getElementById("position").val(userLoc);
        $("#position").val(userLoc);
        //posElement.val(userLoc);
-       console.log(position.coords.latitude, position.coords.longitude);
+      //  console.log(position.coords.latitude, position.coords.longitude);
        var donors = <%- JSON.stringify(donors) %>;
        if (donors.length == 0) {
          console.log("No donors");
@@ -139,28 +139,28 @@
          //listElement.appendChild(seekingMessage);
          cardHeader.appendChild(seekingMessage);
        } else {
-         console.log(donors);
+        //  console.log(donors);
          var donorLoc;
          for (let i = 0; i < donors.length; i++) {
            if (donors[i].address.location) {
              if (donors[i].address.location.coordinates[0] != 0 && donors[i].address.location.coordinates[1] != 0) {
                donorLoc = [donors[i].address.location.coordinates[0], donors[i].address.location.coordinates[1]]
                donors[i].dstToUser = dstOnEarth(donorLoc, userLoc, "M");
-               console.log(i);
-               console.log(donors[i].dstToUser);
+              //  console.log(i);
+              //  console.log(donors[i].dstToUser);
              } else {
                //donors[i].dstToUser = 1000000;
                donors[i].dstToUser = "undefined";
              }
            } else {
-             console.log(donors[i]);
+            //  console.log(donors[i]);
            }
          }
          //var sortedDonors = sortDonors(donors);
          donors.sort(function (a, b) {
            return a.dstToUser - b.dstToUser;
          })
-         console.log(donors);
+        //  console.log(donors);
          //var listElement = document.getElementById('list-element');
          for (let i = 0; i < donors.length; i++) {
            if (donors[i].dstToUser != "undefined") {
@@ -223,9 +223,9 @@
      var slider = document.getElementById("queryRange");
      var bloodType = document.getElementById('bloodType');
      var Rh = document.getElementsByName('Rh')
-     var lastQuery = <%- JSON.stringify(lastQuery) %>
-       console.log(`lastQuery ${lastQuery[0]}`);
-     console.log(lastQuery);
+     var lastQuery = <%- JSON.stringify(lastQuery) %>;
+      //  console.log(`lastQuery ${lastQuery[0]}`);
+    //  console.log(lastQuery);
      if (lastQuery != {}) {
        var lastQuery = <%- JSON.stringify(lastQuery) %>;
        if (lastQuery.range > 500){
@@ -255,7 +255,7 @@
      
      // Update the current slider value (each time you drag the slider handle)
      slider.oninput = function () {
-       console.log(this.value);
+      //  console.log(this.value);
        output.innerHTML = this.value + " mi";
      }
 
