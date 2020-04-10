@@ -4,9 +4,9 @@
 <div class="text-center">
   <%- include('./plugins/messages.ejs') %>
 </div>
-<div class="d-flex justify-content-center" style="margin-top: 3em">
-<div class="row" style="width: 100%">
-  <div class="col-sm-6">
+<div class="d-flex justify-content-center" style="margin-top: 3em;">
+<div class="row" id="main-container">
+  <div class="col-sm-4">
     <div class="card shadow-lg p-3 rounded" style="
       color: #9ea1a4;
       background-color: #3c4349;
@@ -90,12 +90,12 @@
     </div>
   </div>
   <!-- Data card -->
-  <div class="col-sm-6">
+  <div class="col-sm-8">
     <div class="card" id="donors-card">
       <div class="card-header" id="card-header">
         <!-- <h2>Donors near you</h2> -->
       </div>
-      <div class="list-group overflow-auto" id="list-element" style="height: 400px;"></div>
+      <div class="list-group overflow-auto" id="list-element" style="height: 600px;"></div>
     </div>
   </div>
 </div>
@@ -258,4 +258,19 @@
        }
      }
   </script>
+
+<style>
+  #main-container { /* desktop */
+    width: 80%;
+  }
+  @media (max-width: 1024px) { /* tablet */
+  #main-container { 
+    width: 95%;
+  }
+  @media (max-width: 600px) { /* phone */
+  #main-container {
+    width: 100%;
+  }
+}
+</style>
 </div>
