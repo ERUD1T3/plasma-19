@@ -165,7 +165,7 @@
            if (donors[i].dstToUser != "undefined") {
             var bloodpair = donors[i].blood.split(' ')
              var listItem = document.createElement('a');
-             listItem.href = `/donors/${donors[i]._id}`; //Change # to link we would redirect to
+             listItem.href = `/donors/${donors[i]._id}/${donors[i].dstToUser.toPrecision(2)}`; //Change # to link we would redirect to
              // listItem.classList.add("jumbotron");
              listItem.classList.add("list-group-item");
              listItem.classList.add("list-group-item-action");
@@ -181,7 +181,7 @@
                 </div>
                 <div class="row">
                   <div class="col-9" style="margin-top: .5em;">
-                  <a href="/donors/${donors[i]._id}" class="btn btn-primary">Contact</a>
+                  <a href="/donors/${donors[i]._id}/${donors[i].dstToUser.toPrecision(2)}" class="btn btn-primary">Contact</a>
                   </div>
                   <div class="col-3 flex-col-reverse" style="margin-top: .5em;">
                     <h6>${donors[i].dstToUser.toPrecision(2)} mi</h6>
