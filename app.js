@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const flash = require("connect-flash"); //for sending messages on redirect
 const session = require("express-session");
 const methodOverride = require('method-override')
+const MongoStore = require( "connect-mongo" )( session );
 const app = express();
 const server = require("http").Server(app);
 
@@ -52,44 +53,7 @@ app.use(
 
 
 
-// Connect flash
-app.use(flash());
-//Express Session
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
-//Global vars
-app.use(function (req, res, next) {
-  res.locals.success_msg = req.flash("success_msg");
-  res.locals.error_msg = req.flash("error_msg");
-  res.locals.logged_donor = req.user
-  // res.locals.logged_donor = null;
-  res.locals.error = req.flash("error");
-  
-  next();
-});
-
-
-
-const donor_route = require("./routes/donor.route");
-const misc_route = require("./routes/misc.route");
-app.use("/", donor_route);
-app.use("/info", misc_route);
-
-
-
-
-async function DBconnectMangoose() {
+(async function DBconnectMangoose() {
   // connecting to database with env variable
   try {
     console.log("MongoDB connection with retry");
@@ -110,9 +74,47 @@ async function DBconnectMangoose() {
     console.log("MongoDB connection unsuccessful, retry after 5 seconds.");
     setTimeout(connectWithRetry, 5000);
   }
-}
+})()
 
-DBconnectMangoose();
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: new MongoStore({
+      mongooseConnection: mongoose.connection
+    })
+  })
+);
+
+
+// Connect flash
+app.use(flash());
+//Express Session
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+//Global vars
+app.use(function (req, res, next) {
+  res.locals.success_msg = req.flash("success_msg");
+  res.locals.error_msg = req.flash("error_msg");
+  res.locals.logged_donor = req.user
+  // res.locals.logged_donor = null;
+  res.locals.error = req.flash("error");
+  
+  next();
+});
+
+
+const donor_route = require("./routes/donor.route");
+const misc_route = require("./routes/misc.route");
+app.use("/", donor_route);
+app.use("/info", misc_route);
+
+
+
 server.listen(process.env.PORT, (error) => {
   console.log(
     error ? error : `***Plasma-19***\nServer up on ${process.env.PORT}`
