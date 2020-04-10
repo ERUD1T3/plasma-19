@@ -688,6 +688,7 @@ router.get("/download/:file_id/:name", function (req, res) {
 });
 
 router.post("/", function (req, res) {
+  var errors = [];
   console.log("Finding...");
   var coordinates = [];
   var coordStr = req.body.position.split(",");
@@ -695,9 +696,24 @@ router.post("/", function (req, res) {
   coordinates[1] = parseFloat(coordStr[1]);
   console.log(`Coordinates: ${coordinates}`);
   let rxrange = parseFloat(req.body.queryRange);
+
   if (isNaN(rxrange)) {
     rxrange = 100000000; // big radius
   }
+
+  if(isNaN(coordStr[0]) || isNaN(coordStr[1])) {
+    errors.push({ msg: "Could not find your GPS location, Please allow GPS location"})
+    return res.render("main", {
+      errors,
+      donors: [],
+      lastQuery: {
+        bloodType: query.bloodType,
+        Rh: query.Rh,
+        range: query.range,
+      },
+    })
+  }
+
   var query = {
     bloodType: req.body.bloodType,
     Rh: req.body.Rh,
@@ -711,7 +727,7 @@ router.post("/", function (req, res) {
     query.blood.split(" ")[0] == "Choose..." ||
     query.blood.split(" ")[1] == "undefined"
   ) {
-    var errors = [];
+    
     errors.push({ msg: "Invalid filter. Add a Blood Type and an Rh" });
     res.render("main", {
       errors,
