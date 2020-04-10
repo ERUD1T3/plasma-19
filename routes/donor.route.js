@@ -611,11 +611,15 @@ router.post("/", function (req, res) {
   coordinates[0] = parseFloat(coordStr[0]);
   coordinates[1] = parseFloat(coordStr[1]);
   console.log(`Coordinates: ${coordinates}`);
+  let rxrange = parseFloat(req.body.queryRange)
+  if(isNaN(rxrange)) {
+    rxrange = 100000000 // big radius
+  }
   var query = {
     bloodType: req.body.bloodType,
     Rh: req.body.Rh,
     blood: `${req.body.bloodType} ${req.body.Rh}`,
-    range: parseFloat(req.body.queryRange),
+    range: rxrange,
     userPos: coordinates,
   };
 

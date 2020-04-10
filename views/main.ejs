@@ -20,10 +20,24 @@
           </div>
           <!-- Range -->
           <div class="form-group" style="margin-top: 1em;">
-            <label for="customRange1">Search Range</label>
-            <input type="range" class="custom-range" name="queryRange" id="queryRange" />
-            <div id="rangeValue"></div>
+            <div class="row">
+              <div class="col-9">
+                <label for="customRange1">Search Range</label>
+              </div>
+              <div class="col-3 d-flex justify-content-end">
+                <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                  <input type="checkbox" class="custom-control-input" id="nationwide" name="nationwide" value="true" onclick="checkNW()">
+                  <label class="custom-control-label" for="nationwide">
+                    <b>Nationwide</b>
+                  </label>
+                </div>
+              </div>
+        
+            </div>
+            <input type="range" class="custom-range" name="queryRange" id="queryRange" min="0" max="500"/>
+            <h4 id="rangeValue"></h4>
           </div>
+          
           
           <!-- BloodType -->
           <label for="bloodType">Entery Blood Type</label>
@@ -229,6 +243,19 @@
      slider.oninput = function () {
        console.log(this.value);
        output.innerHTML = this.value + " mi";
+     }
+
+
+     function checkNW() {
+       let range = document.getElementById('queryRange')
+       let nwcheckbox = document.getElementById('nationwide')
+       if(nwcheckbox.checked == true) {
+        range.disabled = true
+        output.innerHTML = 'Nationwide'
+        // output.value = 1000000
+       } else {
+        range.disabled = false
+       }
      }
   </script>
 </div>
