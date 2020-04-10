@@ -453,8 +453,9 @@ router.post("/donor/password-recovery/:_id", (req, res) => {
 
   if (errors.length > 0) {
     console.log(errors);
-    res.render("updatepassword", {
+    res.render("updatepdwid", {
       errors,
+      donor_id: req.params._id,
     });
   } else {
 
@@ -482,7 +483,8 @@ router.post("/donor/password-recovery/:_id", (req, res) => {
                 errors.push({
                   msg: "Password Incorrect",
                 });
-                res.render("updatepassword", {
+                res.render("updatepdwid", {
+                  donor_id: req.params._id,
                   errors,
                 });
               }
@@ -544,7 +546,7 @@ router.post("/donor/password-recovery", (req, res) => {
         <br><br>
         <h3>Plasma-19 Support</h3>
         <br>
-        <i> Follow the link below and use the password to update your password</i>
+        <i> Follow the link below and use the recovery password to update your password</i>
         <br>
         <b>${emailMsg}</b>
         <br>
