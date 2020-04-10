@@ -701,6 +701,14 @@ router.post("/", function (req, res) {
     rxrange = 100000000; // big radius
   }
 
+  var query = {
+    bloodType: req.body.bloodType,
+    Rh: req.body.Rh,
+    blood: `${req.body.bloodType} ${req.body.Rh}`,
+    range: rxrange,
+    userPos: coordinates,
+  };
+
   if(isNaN(coordStr[0]) || isNaN(coordStr[1])) {
     errors.push({ msg: "Could not find your GPS location, Please allow GPS location"})
     return res.render("main", {
@@ -714,13 +722,7 @@ router.post("/", function (req, res) {
     })
   }
 
-  var query = {
-    bloodType: req.body.bloodType,
-    Rh: req.body.Rh,
-    blood: `${req.body.bloodType} ${req.body.Rh}`,
-    range: rxrange,
-    userPos: coordinates,
-  };
+
 
   // console.log(`query.blood = ${query.blood}`)
   if (
