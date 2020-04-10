@@ -420,14 +420,81 @@ router.get("/donor/password-recovery", (req, res) => {
 
 router.get("/donor/password-recovery/:_id", (req, res) => {
   // console.log('forgot password')
-  res.render("updatepassword");
+  res.render("updatepdwid", {
+    donor_id: req.params._id
+  });
 });
 
-// router.post("/donor/password-recovery/:_id", (req, res) => {
-//   // console.log('forgot password')
-//   Donor.findById({ _id: req.params._id }, function (err, donor) {});
-//   res.render("updatepassword");
-// });
+router.post("/donor/password-recovery/:_id", (req, res) => {
+  // console.log('forgot password')
+  
+  Donor.findById({ _id: req.params._id }, async (err, recDonor) => {
+    let donor = req.body
+    let errors = [];
+    if(err || !recDonor) {
+      errors.push({
+        msg: "Error finding donor for recovery",
+      });
+      return res.render('updatepdwid', {
+        errors
+      })
+    }
+
+    
+  if (!donor.password1 || !donor.password2) {
+    errors.push({
+      msg: "Please fill in all fields",
+    });
+  } else if (donor.password1 != donor.password2) {
+    errors.push({
+      msg: "Passwords must match",
+    });
+  }
+
+  if (errors.length > 0) {
+    console.log(errors);
+    res.render("updatepassword", {
+      errors,
+    });
+  } else {
+
+        try {
+          //check old password
+          // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
+
+          await bcrypt.compare(
+            donor.oldpassword,
+            recDonor.password,
+            async (error, isMatch) => {
+              if (isMatch) {
+                // return done(null, donor)
+                console.log(`Updated password: ${donor.password1}`);
+                let hash = await bcrypt.hash(donor.password1, 10);
+                console.log(`hash: ${hash}`);
+                recDonor.password = hash;
+
+                console.log(`Update user: ${recDonor}`);
+                await recDonor.save();
+                req.flash("success_msg", "Password Updated");
+                res.redirect("/login");
+              } else {
+                console.log("Password incorrect!");
+                errors.push({
+                  msg: "Password Incorrect",
+                });
+                res.render("updatepassword", {
+                  errors,
+                });
+              }
+            }
+          );
+        } catch (error) {}
+      }
+
+
+  });
+ 
+});
 
 router.post("/donor/password-recovery", (req, res) => {
   console.log("forgot password");
@@ -477,11 +544,11 @@ router.post("/donor/password-recovery", (req, res) => {
         <br><br>
         <h3>Plasma-19 Support</h3>
         <br>
-        <i> Use the password below to login and update your password</i>
+        <i> Follow the link below and use the password to update your password</i>
         <br>
         <b>${emailMsg}</b>
         <br>
-        <a href='https://plasma-19.com/donor/update-password/${updatedDonor._id}'>
+        <a href='https://plasma-19.com/donor/password-recovery/${updatedDonor._id}'>
           Upate my password
         </a>
         <p> Plasma-19 Team </p>
