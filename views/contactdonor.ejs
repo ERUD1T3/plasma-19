@@ -60,11 +60,15 @@
             name="message"
             id="exampleFormControlTextarea1"
             rows="6"
+            placeholder="Hello, thank you for your kindness. You are saving a life."
           ></textarea>
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
         <a href="/" class="card-link">Cancel</a>
       </form>
     </div>
+    <script>
+      console.log(<%- JSON.stringify(donor) %>);
+    </script>
   </div>
 </div>

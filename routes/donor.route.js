@@ -217,7 +217,7 @@ router.get("/donors/:id/:dst", function (req, res) {
           lastQuery: {},
         });
       }
-      donor[0].dst = req.params.dst;
+      donor[0].dst = parseFloat(req.params.dst).toPrecision(3);
       console.log(donor);
       res.render("contactdonor", {
         donor: donor[0],
@@ -260,8 +260,9 @@ router.post("/donors/:id/:dst", function (req, res) {
             lastQuery: {},
           });
         }
+        donor[0].dst = parseFloat(req.params.dst).toPrecision(3);
         res.render("contactdonor", {
-          donor: donor[0].firstname,
+          donor: donor[0],
           errors: [
             {
               msg: "Please fill in all fields",
@@ -326,7 +327,7 @@ router.delete("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-router.get("/donor/update-password", (req, res) => {
+router.get("/donor/update-password", checkAuthenticated, (req, res) => {
   console.log("update password");
   res.render("updatepassword");
 });
@@ -351,7 +352,7 @@ router.put("/donor/update-password", (req, res) => {
 
   if (errors.length > 0) {
     console.log(errors);
-    res.render("update-password", {
+    res.render("updatepassword", {
       errors,
     });
   } else {
@@ -392,6 +393,9 @@ router.put("/donor/update-password", (req, res) => {
                 errors.push({
                   msg: "Password Incorrect",
                 });
+                res.render("updatepassword", {
+                  errors,
+                });
               }
             }
           );
@@ -413,6 +417,17 @@ router.get("/donor/password-recovery", (req, res) => {
   // console.log('forgot password')
   res.render("pdrecovery");
 });
+
+router.get("/donor/password-recovery/:_id", (req, res) => {
+  // console.log('forgot password')
+  res.render("updatepassword");
+});
+
+// router.post("/donor/password-recovery/:_id", (req, res) => {
+//   // console.log('forgot password')
+//   Donor.findById({ _id: req.params._id }, function (err, donor) {});
+//   res.render("updatepassword");
+// });
 
 router.post("/donor/password-recovery", (req, res) => {
   console.log("forgot password");
@@ -466,7 +481,7 @@ router.post("/donor/password-recovery", (req, res) => {
         <br>
         <b>${emailMsg}</b>
         <br>
-        <a href='https://plasma-19.herokuapp.com/donor/udpate-password'>
+        <a href='https://plasma-19.com/donor/update-password/${updatedDonor._id}'>
           Upate my password
         </a>
         <p> Plasma-19 Team </p>
@@ -540,13 +555,11 @@ router.put("/donor/edit", multiparty, (req, res) => {
       updatedDonor.firstname = donor_edit.firstname;
       updatedDonor.lastname = donor_edit.lastname;
       updatedDonor.blood = `${donor_edit.bloodType} ${donor_edit.Rh}`;
-      updatedDonor.address = {
-        line1: donor_edit.inputaddress,
-        line2: donor_edit.inputaddress2,
-        city: donor_edit.city,
-        state: donor_edit.state,
-        zip: donor_edit.zip,
-      };
+      updatedDonor.address.line1 = donor_edit.inputaddress;
+      updatedDonor.address.line2 = donor_edit.inputaddress2;
+      updatedDonor.address.city = donor_edit.city;
+      updatedDonor.address.state = donor_edit.state;
+      updatedDonor.address.zip = donor_edit.zip;
 
       geoDriver.addDonorToMap(donor_edit, function (err, donorOnMap) {
         if (err || !donorOnMap.geometry.coordinates) {
@@ -560,10 +573,10 @@ router.put("/donor/edit", multiparty, (req, res) => {
           console.log(
             `New user located at: ${donorOnMap.geometry.coordinates}`
           );
-
-          updatedDonor.address.location.longitude =
+          console.log(updatedDonor);
+          updatedDonor.address.location.coordinates[0] =
             donorOnMap.geometry.coordinates[0];
-          updatedDonor.address.location.latitude =
+          updatedDonor.address.location.coordinates[1] =
             donorOnMap.geometry.coordinates[1];
 
           // console.error('file: %j', file)
@@ -612,9 +625,9 @@ router.post("/", function (req, res) {
   coordinates[0] = parseFloat(coordStr[0]);
   coordinates[1] = parseFloat(coordStr[1]);
   console.log(`Coordinates: ${coordinates}`);
-  let rxrange = parseFloat(req.body.queryRange)
-  if(isNaN(rxrange)) {
-    rxrange = 100000000 // big radius
+  let rxrange = parseFloat(req.body.queryRange);
+  if (isNaN(rxrange)) {
+    rxrange = 100000000; // big radius
   }
   var query = {
     bloodType: req.body.bloodType,
