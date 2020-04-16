@@ -21,9 +21,9 @@ router.get("/", (req, res) => {
   //res.send("hello world")
   var errors = [];
   console.log(`locals ${res.locals.logged_donor}`);
-  Donor.find({}, function (err, donors) {
+  Donor.find({}, function (err, raw_donors) {
     if (err) throw err;
-    if (!donors) {
+    if (!raw_donors) {
       errors.push({
         msg: "Could not find donors",
       });
@@ -31,9 +31,20 @@ router.get("/", (req, res) => {
         errors,
       });
     } else {
-      console.log(donors);
+      console.log(raw_donors);
+      let sdonors = []
+      for (let rdonor of raw_donors) {
+        sdonors.push({
+          _id: rdonor._id,
+          firstname: rdonor.firstname,
+          lastname: rdonor.lastname,
+          blood: rdonor.blood,
+          coordinates: rdonor.address.location.coordinates,
+        })
+      }
+
       res.render("main", {
-        donors,
+        donors: sdonors,
         logged_donor: req.user,
         lastQuery: {},
       });
@@ -131,8 +142,7 @@ router.post("/signup", multiparty, async (req, res) => {
               //return done(null, false, {message: 'User already exists'});
               console.log("Found email");
               errors.push({
-                msg:
-                  "This email already exists. Please sign in if you're already registered",
+                msg: "This email already exists. Please sign in if you're already registered",
               });
               res.render("signup", {
                 errors,
@@ -202,8 +212,7 @@ router.get("/donors/:id/:dst", function (req, res) {
   // console.log(`Current donor ${req.locals.logged_donor.firstname}`);
   console.log(`Donor: ${req.params.id}`);
   var id = req.params.id;
-  Donor.find(
-    {
+  Donor.find({
       _id: id,
     },
     function (err, donor) {
@@ -244,8 +253,7 @@ router.post("/donors/:id/:dst", function (req, res) {
   }
 
   if (errors.length > 0) {
-    Donor.find(
-      {
+    Donor.find({
         _id: id,
       },
       function (err, donor) {
@@ -263,18 +271,15 @@ router.post("/donors/:id/:dst", function (req, res) {
         donor[0].dst = parseFloat(req.params.dst).toPrecision(3);
         res.render("contactdonor", {
           donor: donor[0],
-          errors: [
-            {
-              msg: "Please fill in all fields",
-            },
-          ],
+          errors: [{
+            msg: "Please fill in all fields",
+          }, ],
         });
       }
     );
   } else {
     //Send email
-    Donor.find(
-      {
+    Donor.find({
         _id: id,
       },
       function (err, donor) {
@@ -427,11 +432,13 @@ router.get("/donor/password-recovery/:_id", (req, res) => {
 
 router.post("/donor/password-recovery/:_id", (req, res) => {
   // console.log('forgot password')
-  
-  Donor.findById({ _id: req.params._id }, async (err, recDonor) => {
+
+  Donor.findById({
+    _id: req.params._id
+  }, async (err, recDonor) => {
     let donor = req.body
     let errors = [];
-    if(err || !recDonor) {
+    if (err || !recDonor) {
       errors.push({
         msg: "Error finding donor for recovery",
       });
@@ -440,62 +447,62 @@ router.post("/donor/password-recovery/:_id", (req, res) => {
       })
     }
 
-    
-  if (!donor.password1 || !donor.password2) {
-    errors.push({
-      msg: "Please fill in all fields",
-    });
-  } else if (donor.password1 != donor.password2) {
-    errors.push({
-      msg: "Passwords must match",
-    });
-  }
 
-  if (errors.length > 0) {
-    console.log(errors);
-    res.render("updatepdwid", {
-      errors,
-      donor_id: req.params._id,
-    });
-  } else {
+    if (!donor.password1 || !donor.password2) {
+      errors.push({
+        msg: "Please fill in all fields",
+      });
+    } else if (donor.password1 != donor.password2) {
+      errors.push({
+        msg: "Passwords must match",
+      });
+    }
 
-        try {
-          //check old password
-          // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
+    if (errors.length > 0) {
+      console.log(errors);
+      res.render("updatepdwid", {
+        errors,
+        donor_id: req.params._id,
+      });
+    } else {
 
-          await bcrypt.compare(
-            donor.oldpassword,
-            recDonor.password,
-            async (error, isMatch) => {
-              if (isMatch) {
-                // return done(null, donor)
-                console.log(`Updated password: ${donor.password1}`);
-                let hash = await bcrypt.hash(donor.password1, 10);
-                console.log(`hash: ${hash}`);
-                recDonor.password = hash;
+      try {
+        //check old password
+        // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
 
-                console.log(`Update user: ${recDonor}`);
-                await recDonor.save();
-                req.flash("success_msg", "Password Updated");
-                res.redirect("/login");
-              } else {
-                console.log("Password incorrect!");
-                errors.push({
-                  msg: "Password Incorrect",
-                });
-                res.render("updatepdwid", {
-                  donor_id: req.params._id,
-                  errors,
-                });
-              }
+        await bcrypt.compare(
+          donor.oldpassword,
+          recDonor.password,
+          async (error, isMatch) => {
+            if (isMatch) {
+              // return done(null, donor)
+              console.log(`Updated password: ${donor.password1}`);
+              let hash = await bcrypt.hash(donor.password1, 10);
+              console.log(`hash: ${hash}`);
+              recDonor.password = hash;
+
+              console.log(`Update user: ${recDonor}`);
+              await recDonor.save();
+              req.flash("success_msg", "Password Updated");
+              res.redirect("/login");
+            } else {
+              console.log("Password incorrect!");
+              errors.push({
+                msg: "Password Incorrect",
+              });
+              res.render("updatepdwid", {
+                donor_id: req.params._id,
+                errors,
+              });
             }
-          );
-        } catch (error) {}
-      }
+          }
+        );
+      } catch (error) {}
+    }
 
 
   });
- 
+
 });
 
 router.post("/donor/password-recovery", (req, res) => {
@@ -709,8 +716,10 @@ router.post("/", function (req, res) {
     userPos: coordinates,
   };
 
-  if(isNaN(coordStr[0]) || isNaN(coordStr[1])) {
-    errors.push({ msg: "Could not find your GPS location, Please allow GPS location"})
+  if (isNaN(coordStr[0]) || isNaN(coordStr[1])) {
+    errors.push({
+      msg: "Could not find your GPS location, Please allow GPS location"
+    })
     return res.render("main", {
       errors,
       donors: [],
@@ -729,8 +738,10 @@ router.post("/", function (req, res) {
     query.blood.split(" ")[0] == "Choose..." ||
     query.blood.split(" ")[1] == "undefined"
   ) {
-    
-    errors.push({ msg: "Invalid filter. Add a Blood Type and an Rh" });
+
+    errors.push({
+      msg: "Invalid filter. Add a Blood Type and an Rh"
+    });
     res.render("main", {
       errors,
       donors: [],
@@ -744,8 +755,7 @@ router.post("/", function (req, res) {
     console.log(query);
     if (req.body.isSpecSearch == "true") {
       Donor.aggregate(
-        [
-          {
+        [{
             $match: {
               "address.location.coordinates": {
                 $geoWithin: {
@@ -763,21 +773,25 @@ router.post("/", function (req, res) {
             },
           },
         ],
-        function (err, donors) {
-          if (err || !donors) {
+        function (err, raw_donors) {
+          if (err || !raw_donors) {
             console.log(err);
             var errors = [];
-            errors.push({ msg: "Error finding donors" });
+            errors.push({
+              msg: "Error finding donors"
+            });
             res.render("main", {
               errors,
               lastQuery: {},
             });
           }
-          if (donors.length == 0) {
+          if (raw_donors.length == 0) {
             var errors = [];
-            errors.push({ msg: "No Donors match your filter" });
+            errors.push({
+              msg: "No Donors match your filter"
+            });
             res.render("main", {
-              donors,
+              raw_donors,
               errors,
               lastQuery: {
                 bloodType: query.bloodType,
@@ -787,10 +801,23 @@ router.post("/", function (req, res) {
             });
           } else {
             console.log("Found donors!");
-            console.log(donors);
-            console.log(`Found: ${donors.length}`);
+            console.log(raw_donors);
+            console.log(`Found: ${raw_donors.length}`);
+
+
+            let sdonors = []
+            for (let rdonor of raw_donors) {
+              sdonors.push({
+                _id: rdonor._id,
+                firstname: rdonor.firstname,
+                lastname: rdonor.lastname,
+                blood: rdonor.blood,
+                coordinates: rdonor.address.location.coordinates,
+              })
+            }
+
             res.render("main", {
-              donors,
+              donors: sdonors,
               lastQuery: {
                 bloodType: query.bloodType,
                 Rh: query.Rh,
@@ -805,8 +832,7 @@ router.post("/", function (req, res) {
       let compBloods = getCompatibleBlood(query.blood);
       console.log(`Compatible bloods ${compBloods}`);
       Donor.aggregate(
-        [
-          {
+        [{
             $match: {
               "address.location.coordinates": {
                 $geoWithin: {
@@ -826,21 +852,25 @@ router.post("/", function (req, res) {
             },
           },
         ],
-        function (err, donors) {
-          if (err || !donors) {
+        function (err, raw_donors) {
+          if (err || !raw_donors) {
             console.log(err);
             var errors = [];
-            errors.push({ msg: "Error finding donors" });
+            errors.push({
+              msg: "Error finding donors"
+            });
             res.render("main", {
               errors,
               lastQuery: {},
             });
           }
-          if (donors.length == 0) {
+          if (raw_donors.length == 0) {
             var errors = [];
-            errors.push({ msg: "No Donors match your filter" });
+            errors.push({
+              msg: "No Donors match your filter"
+            });
             res.render("main", {
-              donors,
+              raw_donors,
               errors,
               lastQuery: {
                 bloodType: query.bloodType,
@@ -850,10 +880,22 @@ router.post("/", function (req, res) {
             });
           } else {
             console.log("Found donors!");
-            console.log(donors);
-            console.log(`Found: ${donors.length}`);
+            console.log(raw_donors);
+            console.log(`Found: ${raw_donors.length}`);
+
+            let sdonors = []
+            for (let rdonor of raw_donors) {
+              sdonors.push({
+                _id: rdonor._id,
+                firstname: rdonor.firstname,
+                lastname: rdonor.lastname,
+                blood: rdonor.blood,
+                coordinates: rdonor.address.location.coordinates,
+              })
+            }
+
             res.render("main", {
-              donors,
+              donors: sdonors,
               lastQuery: {
                 bloodType: query.bloodType,
                 Rh: query.Rh,

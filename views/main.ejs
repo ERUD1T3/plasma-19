@@ -142,9 +142,9 @@
         //  console.log(donors);
          var donorLoc;
          for (let i = 0; i < donors.length; i++) {
-           if (donors[i].address.location) {
-             if (donors[i].address.location.coordinates[0] != 0 && donors[i].address.location.coordinates[1] != 0) {
-               donorLoc = [donors[i].address.location.coordinates[0], donors[i].address.location.coordinates[1]]
+           if (donors[i].coordinates) {
+             if (donors[i].coordinates[0] != 0 && donors[i].coordinates[1] != 0) {
+               donorLoc = [donors[i].coordinates[0], donors[i].coordinates[1]]
                donors[i].dstToUser = dstOnEarth(donorLoc, userLoc, "M");
               //  console.log(i);
               //  console.log(donors[i].dstToUser);
