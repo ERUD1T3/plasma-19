@@ -40,6 +40,7 @@ router.get("/", (req, res) => {
           lastname: rdonor.lastname,
           blood: rdonor.blood,
           coordinates: rdonor.address.location.coordinates,
+          verified: rdonor.verified
         })
       }
 
@@ -813,6 +814,7 @@ router.post("/", function (req, res) {
                 lastname: rdonor.lastname,
                 blood: rdonor.blood,
                 coordinates: rdonor.address.location.coordinates,
+                verified: rdonor.verified
               })
             }
 
@@ -891,6 +893,7 @@ router.post("/", function (req, res) {
                 lastname: rdonor.lastname,
                 blood: rdonor.blood,
                 coordinates: rdonor.address.location.coordinates,
+                verified: rdonor.verified
               })
             }
 

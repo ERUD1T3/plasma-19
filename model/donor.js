@@ -24,6 +24,10 @@ const donorSchema = new mongoose.Schema({
     default: Date.now,
   },
   document: {},
+  verified: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const Donor = (module.exports = mongoose.model("Donor", donorSchema));

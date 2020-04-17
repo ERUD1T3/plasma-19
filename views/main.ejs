@@ -163,7 +163,7 @@
         //  console.log(donors);
          //var listElement = document.getElementById('list-element');
          for (let i = 0; i < donors.length; i++) {
-           if (donors[i].dstToUser != "undefined") {
+           if (donors[i].dstToUser != "undefined" && donors[i].verified) {
             var bloodpair = donors[i].blood.split(' ')
              var listItem = document.createElement('a');
              listItem.href = `/donors/${donors[i]._id}/${donors[i].dstToUser.toPrecision(2)}`; //Change # to link we would redirect to

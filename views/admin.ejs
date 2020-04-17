@@ -1,0 +1,62 @@
+<!-- page to administer verifications -->
+
+<!-- display list of users that are not verified -->
+
+<!-- checkbox for verifying -->
+
+<div id="list-container" class="d-flex justify-content-center">
+    <div
+      class="card shadow p-1 bg-white rounded"
+      style="
+        margin-top: 4rem;
+        width: 50rem;
+        margin-left: 1rem;
+        margin-right: 1rem;
+      "
+    >
+    
+      <div class="card-body">
+        <%- include('./plugins/messages.ejs') %>
+        <% if(donors) { %>
+          <h5 class="card-title">
+            List of Donors to be verified
+          </h5>
+          <hr>
+          <form action="/info/ssadmin" method="POST">
+        
+          <% for(let ud of donors) { %>
+            
+            <div class="col-auto my-1">
+              <div class="form-check custom-checkbox mr-sm-2">
+                <input 
+                type="checkbox" 
+                class="form-check-input" 
+                name="vchecks"
+                value="<%= ud.email %>"
+                />
+                <label class="form-check-label" for="customControlAutosizing">
+                  <b><%= ud.firstname %> <%= ud.lastname %></b>
+                    | Current Doc:
+                      <a href="/download/<%= ud.document.id %>/<%= ud.document.name %>" download>
+                          <%= ud.document.name %>
+                      </a>
+                </label>
+              </div>
+            </div>
+            <br>
+          <% } %>
+        <% } else {  %>
+          <h5 class="card-title">
+            No unverified donors
+          </h5>
+        <% } %>
+
+        
+        <br>
+        <button type="submit" class="btn btn-primary">Verify Checked Donors</button>
+        <a href="/" class="btn btn-link"> Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+  
