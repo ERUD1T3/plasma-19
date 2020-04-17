@@ -22,15 +22,24 @@
             List of Donors to be verified
           </h5>
           <hr>
-          <form action="/info/ssadmin" method="POST" >
+          <form action="/info/ssadmin" method="POST">
         
           <% for(let ud of donors) { %>
             
             <div class="col-auto my-1">
-              <div class="custom-control custom-checkbox mr-sm-2">
-                <input type="checkbox" class="custom-control-input" id="customControlAutosizing">
-                <label class="custom-control-label" for="customControlAutosizing">
-                  <%= ud.firstname %> <%= ud.lastname %> 
+              <div class="form-check custom-checkbox mr-sm-2">
+                <input 
+                type="checkbox" 
+                class="form-check-input" 
+                name="vchecks"
+                value="<%= ud.email %>"
+                />
+                <label class="form-check-label" for="customControlAutosizing">
+                  <b><%= ud.firstname %> <%= ud.lastname %></b>
+                    | Current Doc:
+                      <a href="/download/<%= ud.document.id %>/<%= ud.document.name %>" download>
+                          <%= ud.document.name %>
+                      </a>
                 </label>
               </div>
             </div>
