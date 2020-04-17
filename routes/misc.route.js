@@ -3,6 +3,8 @@ const Donor = require('../model/donor')
 const fileStreamDriver = require("../drivers/fileStreamDriver");
 const router = require('express').Router()
 
+// add login page for admin
+
 
 router.get("/", (req, res) => {
     console.log("Covid 19 info page");
