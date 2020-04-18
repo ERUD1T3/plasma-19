@@ -51,7 +51,7 @@ router.post("/ssadmin/login", async (req, res) => {
                 // if(password === ADMIN_PASSWORD) {
                     console.log('Ok nerda, you in!')
                     allowed = true
-                    req.flash("success_msg", "Ok nerda, you in!");
+                    // req.flash("success_msg", "Ok nerda, you in!");
                     res.redirect("/info/ssadmin");
 
                 } else {
