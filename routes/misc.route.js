@@ -2,6 +2,22 @@
 const Donor = require('../model/donor')
 const fileStreamDriver = require("../drivers/fileStreamDriver");
 const router = require('express').Router()
+const bcrypt = require("bcrypt");
+
+// add login page for admin
+
+var ADMIN_PASSWORD
+
+(async function setAdminPassword() {
+    try {
+       ADMIN_PASSWORD = await bcrypt.hash('realNerda', 10)
+    } catch (error) {
+        console.error(error);
+    }
+})();
+
+// const ADMIN_PASSWORD = 'realNerda'
+var allowed = false
 
 
 router.get("/", (req, res) => {
@@ -16,7 +32,56 @@ router.get("/team", (req, res) => {
     res.render("contactus");
 });
 
-router.get("/ssadmin", (req, res) => {
+router.get("/ssadmin/login", (req, res) => {
+    console.log('bitch, do you even have access?')
+    res.render("adminlogin")
+})
+
+router.post("/ssadmin/login", async (req, res) => {
+    let password = req.body.password
+    var errors = [];
+    console.log('password ' +password)
+    // console.log(ADMIN_PASSWORD)
+    try {
+        await bcrypt.compare(
+            password, 
+            ADMIN_PASSWORD, 
+            (err, isMatch) => {
+                if(isMatch) {
+                // if(password === ADMIN_PASSWORD) {
+                    console.log('Ok nerda, you in!')
+                    allowed = true
+                    req.flash("success_msg", "Ok nerda, you in!");
+                    res.redirect("/info/ssadmin");
+
+                } else {
+                    errors.push({
+                        msg: 'B*tch, thats what I tought, Now begone!'
+                    })
+                    res.render('adminlogin', {
+                        errors
+                    })
+                }
+            }
+        )
+    } catch(error) {
+        console.log(error)
+        errors.push({
+            msg: 'B*tch, thats what I tought, Now begone!'
+        })
+        res.render('adminlogin', {
+            errors
+        })
+    }
+})
+
+router.get("/ssadmin", (req, res, next)=>{
+    if(allowed) {
+        allowed = false
+        return next()
+    }
+    res.redirect('/info/ssadmin/login');
+},(req, res) => {
     console.log("found admin page")
     var errors = [];
     // getting list of donors 
@@ -33,20 +98,38 @@ router.get("/ssadmin", (req, res) => {
             res.render('admin', {
                 errors
             })
-        } else
-        if (!unv_donors) {
-            console.log('No unverified donors found')
-            req.flash(
-                "success_msg",
-                "All Donors have been verified. No unverified donors!"
-            )
-            res.redirect('/')
         } else {
-            console.log('rendiring list of unverified donors on front end')
-            res.render('admin', {
-                donors: unv_donors,
+            Donor.find((error, alldonors) => {
+                if(error || !alldonors) {
+                    console.log('Error finding donors')
+                    errors.push({
+                        msg: 'Error finding donors'
+                    })
+                    res.render('admin', {
+                        errors
+                    })
+                } else 
+                if (!unv_donors) {
+                    console.log('No unverified donors found')
+                    req.flash(
+                        "success_msg",
+                        "All Donors have been verified. No unverified donors!"
+                    )
+                    res.render('admin', {
+                        donors: null,
+                        alldonors: alldonors
+                    })
+                } else {
+                    console.log('rendiring list of unverified donors on front end')
+        
+                    res.render('admin', {
+                        donors: unv_donors,
+                        alldonors: alldonors
+                    })
+                }
             })
         }
+        
     })
 })
 
