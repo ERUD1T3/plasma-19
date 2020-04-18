@@ -19,9 +19,11 @@
           >Home <span class="sr-only">(current)</span></a
         >
       </li>
-     
+
       <li class="nav-item">
-        <a class="nav-link" href="https://coronavirus.jhu.edu/map.html">Covid-19</a>
+        <a class="nav-link" href="https://coronavirus.jhu.edu/map.html"
+          >Covid-19</a
+        >
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/info/team">Contact Us</a>
@@ -32,14 +34,14 @@
         <%- include('./logout.ejs')%>
       </li>
       <% } else { %>
-        <li class="nav-item">
-          <a class="nav-link" href="/signup">Join as Donor</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link btn btn-outline-primary" href="/login">Login</a>
-        </li>
-        
-        <!-- <div class="text-center">
+      <li class="nav-item">
+        <a class="nav-link" href="/signup">Join as Donor</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link btn btn-outline-primary" href="/login">Login</a>
+      </li>
+
+      <!-- <div class="text-center">
           <a href="/login" class="btn btn-outline-primary">
             Login
           </a>
@@ -47,24 +49,38 @@
       <% } %>
     </ul>
     <div>
-        <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
-        <% if (locals.logged_donor) { %>
-          <!-- Example split danger button -->
-        
-        <div class="nav-item dropdown show">
-          <a class="btn btn-secondary dropdown-toggle" href="/donor/edit" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <%= locals.logged_donor.firstname %>
-          </a>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="/donor/edit">Edit profile</a>
-            <a class="dropdown-item" href="/donor/update-password">Update password</a>
-          </div>
+      <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
+      <% if (locals.logged_donor) { %>
+      <!-- Example split danger button -->
+
+      <div class="nav-item dropdown show">
+        <a
+          class="btn btn-secondary dropdown-toggle"
+          href="/donor/edit"
+          role="button"
+          id="dropdownMenuLink"
+          data-toggle="dropdown"
+          aria-haspopup="true"
+          aria-expanded="false"
+        >
+          <%= locals.logged_donor.firstname %>
+        </a>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="/donor/edit">Edit profile</a>
+          <a class="dropdown-item" href="/donor/update-password"
+            >Update password</a
+          >
+          <a
+            class="dropdown-item"
+            href="/download/PDF/<%= locals.logged_donor.HIPAA_file.id %>/<%= locals.logged_donor.HIPAA_file.name %>"
+            download
+            >Download your HIPAA release</a
+          >
         </div>
-            <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
-      
-        <% } %>
-        
+      </div>
+      <!-- <a class="nav-link" href="/info/team">Contact Us</a> -->
+
+      <% } %>
     </div>
   </div>
 </nav>
-

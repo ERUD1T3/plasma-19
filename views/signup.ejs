@@ -218,12 +218,26 @@
             <!-- <div class="fileupload">
               <input type="file" name="fileupload" id="fileupload">
             </div>   -->
-              <div>COVID-19 Recovery Proof</div>
+              <div>COVID-19 Test</div>
               <div class="custom-file" style="margin-bottom: 1em">
                 <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">
                 <label class="custom-file-label" for="proofDocument">Upload Document</label>
-                <small class="form-text text-muted">Test results, hospital documents or other proof of COVID-19 recovery</small>
+                <small class="form-text text-muted">Test results, hospital documents or other evidence of having COVID-19</small>
               </div>
+            <br><br>
+            <div class="form-group">
+              <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                <input type="checkbox" class="custom-control-input" id="hipaa_signature" name="hipaa_signature" value="true" required>
+                <label class="custom-control-label" for="hipaa_signature">
+                  <b>SIGN HIPAA RELEASE</b>
+                </label>
+                <div>
+                  By checking this box your are signing a Health Insurance Portability & Accountability (HIPAA)
+                  release form. Please review the form <a target="_blank" href="/download/PDF/5e9a90ba2700b436dd7e569a/PLASMA-19 HIPPA RELEASE.pdf">here</a> before checking the box. For more information on HIPAA visit 
+                  <a target="_blank" href="https://www.hhs.gov/hipaa/for-professionals/privacy/index.html">hhs.gov</a>
+                </div>
+              </div>
+            </div>
 
             <br><br>
             <div class="text-center">
@@ -260,8 +274,8 @@
           //File upload management
             $('#proofDocument').on('change', function () {
               // $('#GFG_DOWN').text(this.files[0].size + "bytes");
-              var cad_file = this.files[0];
-              console.log(cad_file);
+              var medDoc = this.files[0];
+              console.log(medDoc);
               // $('#print-name').text(cad_file.name);
               // var fileSize = cad_file.size / 1024;
               // var roundedFileSize = Math.round(fileSize * 10) / 10;

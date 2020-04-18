@@ -216,6 +216,14 @@
                 </div>
                 <br>
 
+                <div>
+                  HIPAA release form:
+                  <a href="/download/PDF/<%= locals.logged_donor.HIPAA_file.id %>/<%= locals.logged_donor.HIPAA_file.name %>" download>
+                    <%= locals.logged_donor.HIPAA_file.name %>
+                  </a>
+                </div>
+                <br>
+
                 <div>COVID-19 recovery document (Optional)</div>
                 <div class="custom-file" style="margin-bottom: 1em">
                   <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">

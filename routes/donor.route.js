@@ -8,6 +8,9 @@ const fileStreamDriver = require("../drivers/fileStreamDriver");
 const passport = require("passport");
 const nodemailer = require("nodemailer");
 const getCompatibleBlood = require("../utils/compatibleBlood");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+
 const EARTH_RADIUS_MILES = 3963.2;
 const {
   initialize,
@@ -32,7 +35,7 @@ router.get("/", (req, res) => {
       });
     } else {
       console.log(raw_donors);
-      let sdonors = []
+      let sdonors = [];
       for (let rdonor of raw_donors) {
         sdonors.push({
           _id: rdonor._id,
@@ -40,8 +43,8 @@ router.get("/", (req, res) => {
           lastname: rdonor.lastname,
           blood: rdonor.blood,
           coordinates: rdonor.address.location.coordinates,
-          verified: rdonor.verified
-        })
+          verified: rdonor.verified,
+        });
       }
 
       res.render("main", {
@@ -64,7 +67,9 @@ router.post("/signup", multiparty, async (req, res) => {
   // if (file.originalFilename == "") console.log("No file selected");
   console.log("posting user data to db");
   donor = req.body;
-
+  console.log("/////////////////////////////////////");
+  console.log(donor.hipaa_signature);
+  console.log("/////////////////////////////////////");
   let errors = [];
   if (
     !donor.firstname ||
@@ -80,6 +85,10 @@ router.post("/signup", multiparty, async (req, res) => {
   ) {
     errors.push({
       msg: "Please fill in all fields",
+    });
+  } else if (!donor.hipaa_signature) {
+    errors.push({
+      msg: "HIPAA release signature is required",
     });
   } else if (!donor.Rh) {
     errors.push({
@@ -143,28 +152,112 @@ router.post("/signup", multiparty, async (req, res) => {
               //return done(null, false, {message: 'User already exists'});
               console.log("Found email");
               errors.push({
-                msg: "This email already exists. Please sign in if you're already registered",
+                msg:
+                  "This email already exists. Please sign in if you're already registered",
               });
               res.render("signup", {
                 errors,
               });
               //TODO: 2 flash message. One for  registering in database, one for sent email
             } else {
-              Donor.createDonor(newDonor, function (err, donor) {
-                if (err) throw err;
-                console.log(`${donor.firstname} successfully registered!`);
-                req.flash(
-                  "success_msg",
-                  "Welcome new donor! You have successfully registered. You may now login"
+              // Generate and upload HIPAA form
+              try {
+                console.log("Trying generation...");
+                //console.log(newDonor);
+                doc = new PDFDocument();
+                var pdfFile = `${__dirname}/HIPAA/${newDonor.firstname}_${newDonor.lastname}_P19_HIPAA.pdf`;
+                var pdfStream = fs.createWriteStream(pdfFile);
+                doc.image(__dirname + "/HIPAA/PLASMA19_HIPAA.png", 0, 0, {
+                  width: 612,
+                });
+                doc.font("Times-Italic").fontSize(10);
+                doc.text(newDonor.firstname + " " + newDonor.lastname, 70, 600);
+                doc.text(
+                  newDonor.firstname[0] + "." + newDonor.lastname[0],
+                  275,
+                  600
                 );
-                res.redirect("/login");
+                doc.text(Date().split("(")[0], 440, 600); //date
+                doc.pipe(pdfStream);
+                doc.end();
+              } catch (err) {
+                console.log(newDonor);
+                console.error("Pdf generation error: " + err.message);
+                errors.push({
+                  msg: "Could not generate HIPAA document",
+                });
+                res.render("signup", {
+                  errors,
+                });
+              }
+
+              pdfStream.on("finish", function () {
+                var pdfStats = fs.statSync(pdfFile);
+                var hippa_file = {
+                  name: `${newDonor.firstname}_${newDonor.lastname}_P19_HIPAA.pdf`,
+                  path: pdfFile,
+                  size: pdfStats.size,
+                };
+                console.log(hippa_file);
+                fileStreamDriver.upload(hippa_file, function (uploadRes) {
+                  console.log(uploadRes);
+                  newDonor.HIPAA_file = uploadRes;
+                  //Push new user to DB
+                  Donor.createDonor(newDonor, function (err, donor) {
+                    if (err) throw err;
+                    console.log(`${donor.firstname} successfully registered!`);
+                    req.flash(
+                      "success_msg",
+                      "Welcome new donor! You have successfully registered. You may now login"
+                    );
+                    res.redirect("/login");
+                  });
+                });
               });
+              //pdfStream.on('error', function())
             }
           });
         });
       }
     });
   }
+});
+router.get("/view/PDF", function (req, res) {
+  // PDF stuff testing
+  // Generate and upload HIPAA form
+  try {
+    doc = new PDFDocument();
+    var pdfFile = __dirname + "/plasma-19_HIPAA.pdf";
+    var pdfStream = fs.createWriteStream(pdfFile);
+    // doc.pipe(fs.createWriteStream("plasma-19_HIPAA.pdf"));
+    doc.image(__dirname + "/PLASMA19_HIPAA.png", 0, 0, {
+      width: 612,
+    });
+    doc.font("Times-Italic").fontSize(10);
+    // doc.text(donor.firstname + " " + donor.lastname, 23, 230);
+    // doc.text(donor.firstname[0] + "." + donor.lastname[0], 95, 230);
+    doc.text("Pascal Dao", 70, 600);
+    doc.text("P.D", 275, 600);
+    doc.text(Date().split("(")[0], 440, 600); //date
+    doc.pipe(pdfStream);
+    doc.end();
+  } catch (err) {
+    console.error("Pdf generation error: " + err.message);
+  }
+
+  pdfStream.on("finish", function () {
+    res.download(pdfFile);
+  });
+  console.log("View PDF");
+  res.render("downloadPDF");
+});
+
+router.get("/download/PDF/:_id/:name", function (req, res) {
+  let file_id = req.params._id;
+  console.log(`file id: ${file_id}`);
+  fileStreamDriver.download(file_id, res, function (downloadRes) {
+    console.log(`Download res: ${downloadRes}`);
+  });
 });
 
 router.get("/login", (req, res) => {
@@ -213,7 +306,8 @@ router.get("/donors/:id/:dst", function (req, res) {
   // console.log(`Current donor ${req.locals.logged_donor.firstname}`);
   console.log(`Donor: ${req.params.id}`);
   var id = req.params.id;
-  Donor.find({
+  Donor.find(
+    {
       _id: id,
     },
     function (err, donor) {
@@ -254,7 +348,8 @@ router.post("/donors/:id/:dst", function (req, res) {
   }
 
   if (errors.length > 0) {
-    Donor.find({
+    Donor.find(
+      {
         _id: id,
       },
       function (err, donor) {
@@ -272,15 +367,18 @@ router.post("/donors/:id/:dst", function (req, res) {
         donor[0].dst = parseFloat(req.params.dst).toPrecision(3);
         res.render("contactdonor", {
           donor: donor[0],
-          errors: [{
-            msg: "Please fill in all fields",
-          }, ],
+          errors: [
+            {
+              msg: "Please fill in all fields",
+            },
+          ],
         });
       }
     );
   } else {
     //Send email
-    Donor.find({
+    Donor.find(
+      {
         _id: id,
       },
       function (err, donor) {
@@ -427,83 +525,81 @@ router.get("/donor/password-recovery", (req, res) => {
 router.get("/donor/password-recovery/:_id", (req, res) => {
   // console.log('forgot password')
   res.render("updatepdwid", {
-    donor_id: req.params._id
+    donor_id: req.params._id,
   });
 });
 
 router.post("/donor/password-recovery/:_id", (req, res) => {
   // console.log('forgot password')
 
-  Donor.findById({
-    _id: req.params._id
-  }, async (err, recDonor) => {
-    let donor = req.body
-    let errors = [];
-    if (err || !recDonor) {
-      errors.push({
-        msg: "Error finding donor for recovery",
-      });
-      return res.render('updatepdwid', {
-        errors
-      })
-    }
+  Donor.findById(
+    {
+      _id: req.params._id,
+    },
+    async (err, recDonor) => {
+      let donor = req.body;
+      let errors = [];
+      if (err || !recDonor) {
+        errors.push({
+          msg: "Error finding donor for recovery",
+        });
+        return res.render("updatepdwid", {
+          errors,
+        });
+      }
 
+      if (!donor.password1 || !donor.password2) {
+        errors.push({
+          msg: "Please fill in all fields",
+        });
+      } else if (donor.password1 != donor.password2) {
+        errors.push({
+          msg: "Passwords must match",
+        });
+      }
 
-    if (!donor.password1 || !donor.password2) {
-      errors.push({
-        msg: "Please fill in all fields",
-      });
-    } else if (donor.password1 != donor.password2) {
-      errors.push({
-        msg: "Passwords must match",
-      });
-    }
+      if (errors.length > 0) {
+        console.log(errors);
+        res.render("updatepdwid", {
+          errors,
+          donor_id: req.params._id,
+        });
+      } else {
+        try {
+          //check old password
+          // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
 
-    if (errors.length > 0) {
-      console.log(errors);
-      res.render("updatepdwid", {
-        errors,
-        donor_id: req.params._id,
-      });
-    } else {
+          await bcrypt.compare(
+            donor.oldpassword,
+            recDonor.password,
+            async (error, isMatch) => {
+              if (isMatch) {
+                // return done(null, donor)
+                console.log(`Updated password: ${donor.password1}`);
+                let hash = await bcrypt.hash(donor.password1, 10);
+                console.log(`hash: ${hash}`);
+                recDonor.password = hash;
 
-      try {
-        //check old password
-        // console.log(`login password: ${donor.oldpassword} \n stored password: ${updateDonor.password}`)
-
-        await bcrypt.compare(
-          donor.oldpassword,
-          recDonor.password,
-          async (error, isMatch) => {
-            if (isMatch) {
-              // return done(null, donor)
-              console.log(`Updated password: ${donor.password1}`);
-              let hash = await bcrypt.hash(donor.password1, 10);
-              console.log(`hash: ${hash}`);
-              recDonor.password = hash;
-
-              console.log(`Update user: ${recDonor}`);
-              await recDonor.save();
-              req.flash("success_msg", "Password Updated");
-              res.redirect("/login");
-            } else {
-              console.log("Password incorrect!");
-              errors.push({
-                msg: "Password Incorrect",
-              });
-              res.render("updatepdwid", {
-                donor_id: req.params._id,
-                errors,
-              });
+                console.log(`Update user: ${recDonor}`);
+                await recDonor.save();
+                req.flash("success_msg", "Password Updated");
+                res.redirect("/login");
+              } else {
+                console.log("Password incorrect!");
+                errors.push({
+                  msg: "Password Incorrect",
+                });
+                res.render("updatepdwid", {
+                  donor_id: req.params._id,
+                  errors,
+                });
+              }
             }
-          }
-        );
-      } catch (error) {}
+          );
+        } catch (error) {}
+      }
     }
-
-
-  });
-
+  );
 });
 
 router.post("/donor/password-recovery", (req, res) => {
@@ -719,8 +815,8 @@ router.post("/", function (req, res) {
 
   if (isNaN(coordStr[0]) || isNaN(coordStr[1])) {
     errors.push({
-      msg: "Could not find your GPS location, Please allow GPS location"
-    })
+      msg: "Could not find your GPS location, Please allow GPS location",
+    });
     return res.render("main", {
       errors,
       donors: [],
@@ -729,19 +825,16 @@ router.post("/", function (req, res) {
         Rh: query.Rh,
         range: query.range,
       },
-    })
+    });
   }
-
-
 
   // console.log(`query.blood = ${query.blood}`)
   if (
     query.blood.split(" ")[0] == "Choose..." ||
     query.blood.split(" ")[1] == "undefined"
   ) {
-
     errors.push({
-      msg: "Invalid filter. Add a Blood Type and an Rh"
+      msg: "Invalid filter. Add a Blood Type and an Rh",
     });
     res.render("main", {
       errors,
@@ -756,7 +849,8 @@ router.post("/", function (req, res) {
     console.log(query);
     if (req.body.isSpecSearch == "true") {
       Donor.aggregate(
-        [{
+        [
+          {
             $match: {
               "address.location.coordinates": {
                 $geoWithin: {
@@ -779,7 +873,7 @@ router.post("/", function (req, res) {
             console.log(err);
             var errors = [];
             errors.push({
-              msg: "Error finding donors"
+              msg: "Error finding donors",
             });
             res.render("main", {
               errors,
@@ -789,7 +883,7 @@ router.post("/", function (req, res) {
           if (raw_donors.length == 0) {
             var errors = [];
             errors.push({
-              msg: "No Donors match your filter"
+              msg: "No Donors match your filter",
             });
             res.render("main", {
               raw_donors,
@@ -805,8 +899,7 @@ router.post("/", function (req, res) {
             console.log(raw_donors);
             console.log(`Found: ${raw_donors.length}`);
 
-
-            let sdonors = []
+            let sdonors = [];
             for (let rdonor of raw_donors) {
               sdonors.push({
                 _id: rdonor._id,
@@ -814,8 +907,8 @@ router.post("/", function (req, res) {
                 lastname: rdonor.lastname,
                 blood: rdonor.blood,
                 coordinates: rdonor.address.location.coordinates,
-                verified: rdonor.verified
-              })
+                verified: rdonor.verified,
+              });
             }
 
             res.render("main", {
@@ -834,7 +927,8 @@ router.post("/", function (req, res) {
       let compBloods = getCompatibleBlood(query.blood);
       console.log(`Compatible bloods ${compBloods}`);
       Donor.aggregate(
-        [{
+        [
+          {
             $match: {
               "address.location.coordinates": {
                 $geoWithin: {
@@ -859,7 +953,7 @@ router.post("/", function (req, res) {
             console.log(err);
             var errors = [];
             errors.push({
-              msg: "Error finding donors"
+              msg: "Error finding donors",
             });
             res.render("main", {
               errors,
@@ -869,7 +963,7 @@ router.post("/", function (req, res) {
           if (raw_donors.length == 0) {
             var errors = [];
             errors.push({
-              msg: "No Donors match your filter"
+              msg: "No Donors match your filter",
             });
             res.render("main", {
               raw_donors,
@@ -885,7 +979,7 @@ router.post("/", function (req, res) {
             console.log(raw_donors);
             console.log(`Found: ${raw_donors.length}`);
 
-            let sdonors = []
+            let sdonors = [];
             for (let rdonor of raw_donors) {
               sdonors.push({
                 _id: rdonor._id,
@@ -893,8 +987,8 @@ router.post("/", function (req, res) {
                 lastname: rdonor.lastname,
                 blood: rdonor.blood,
                 coordinates: rdonor.address.location.coordinates,
-                verified: rdonor.verified
-              })
+                verified: rdonor.verified,
+              });
             }
 
             res.render("main", {

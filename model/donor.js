@@ -24,10 +24,11 @@ const donorSchema = new mongoose.Schema({
     default: Date.now,
   },
   document: {},
+  HIPAA_file: {},
   verified: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 const Donor = (module.exports = mongoose.model("Donor", donorSchema));

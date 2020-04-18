@@ -8,29 +8,24 @@ const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash"); //for sending messages on redirect
 const session = require("express-session");
-const methodOverride = require('method-override')
-const MongoStore = require( "connect-mongo" )( session );
+const methodOverride = require("method-override");
+const MongoStore = require("connect-mongo")(session);
 const app = express();
 const server = require("http").Server(app);
-
 /* At the top, with other redirect methods before other routes */
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   // loading environment variable when not in production
-  require('dotenv').config()
-  const morgan = require('morgan')
-  app.use(morgan('dev')) // logging requests to server
-
-
+  require("dotenv").config();
+  const morgan = require("morgan");
+  app.use(morgan("dev")); // logging requests to server
 } else {
-  app.get('*',function(req,res,next){
-  if(req.headers['x-forwarded-proto']!='https')
-    res.redirect('https://plasma-19.com'+req.url)
-  else
-    next() /* Continue to other routes if we're not redirecting */
-})
+  app.get("*", function (req, res, next) {
+    if (req.headers["x-forwarded-proto"] != "https")
+      res.redirect("https://plasma-19.com" + req.url);
+    else next(); /* Continue to other routes if we're not redirecting */
+  });
 }
-
 
 // settings
 app.set("view engine", "ejs");
@@ -41,17 +36,13 @@ app.use(layouts);
 app.use(express.static(__dirname + "/public")); // serving frontend file; index.html is starting point
 app.use(cookieParser());
 app.use(express.json()); // middleware to read json
-app.use(methodOverride('_method'))
+app.use(methodOverride("_method"));
 app.use(
   bodyParser.urlencoded({
     limit: "5mb",
     extended: false,
   })
 );
-
-
-
-
 
 (async function DBconnectMangoose() {
   // connecting to database with env variable
@@ -74,7 +65,7 @@ app.use(
     console.log("MongoDB connection unsuccessful, retry after 5 seconds.");
     setTimeout(connectWithRetry, 5000);
   }
-})()
+})();
 
 app.use(
   session({
@@ -82,11 +73,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: new MongoStore({
-      mongooseConnection: mongoose.connection
-    })
+      mongooseConnection: mongoose.connection,
+    }),
   })
 );
-
 
 // Connect flash
 app.use(flash());
@@ -100,20 +90,17 @@ app.use(passport.session());
 app.use(function (req, res, next) {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
-  res.locals.logged_donor = req.user
+  res.locals.logged_donor = req.user;
   // res.locals.logged_donor = null;
   res.locals.error = req.flash("error");
-  
+
   next();
 });
-
 
 const donor_route = require("./routes/donor.route");
 const misc_route = require("./routes/misc.route");
 app.use("/", donor_route);
 app.use("/info", misc_route);
-
-
 
 server.listen(process.env.PORT, (error) => {
   console.log(

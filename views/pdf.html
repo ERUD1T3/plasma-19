@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>jsPDF</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.min.js"></script>
+    <script type="text/javascript">
+      function genPDF() {
+        console.log("Inside JS");
+        var doc = new jsPDF();
+        doc.text(20, 20, "TEST Message!!");
+        doc.addPage();
+        doc.text(20, 20, "TEST Page 2!");
+        var file = doc.output();
+        console.log(file);
+        // doc.save("Test.pdf");
+      }
+    </script>
+  </head>
+  <body>
+    <h1>
+      jsPDF Demo
+    </h1>
+    <a href="javascript: genPDF()">Download PDF</a>
+  </body>
+</html>
