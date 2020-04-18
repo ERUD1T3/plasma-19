@@ -35,20 +35,38 @@ router.get("/ssadmin", (req, res) => {
             res.render('admin', {
                 errors
             })
-        } else
-        if (!unv_donors) {
-            console.log('No unverified donors found')
-            req.flash(
-                "success_msg",
-                "All Donors have been verified. No unverified donors!"
-            )
-            res.redirect('/')
         } else {
-            console.log('rendiring list of unverified donors on front end')
-            res.render('admin', {
-                donors: unv_donors,
+            Donor.find((error, alldonors) => {
+                if(error || !alldonors) {
+                    console.log('Error finding donors')
+                    errors.push({
+                        msg: 'Error finding donors'
+                    })
+                    res.render('admin', {
+                        errors
+                    })
+                } else 
+                if (!unv_donors) {
+                    console.log('No unverified donors found')
+                    req.flash(
+                        "success_msg",
+                        "All Donors have been verified. No unverified donors!"
+                    )
+                    res.render('admin', {
+                        donors: null,
+                        alldonors: alldonors
+                    })
+                } else {
+                    console.log('rendiring list of unverified donors on front end')
+        
+                    res.render('admin', {
+                        donors: unv_donors,
+                        alldonors: alldonors
+                    })
+                }
             })
         }
+        
     })
 })
 
