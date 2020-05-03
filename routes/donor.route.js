@@ -62,14 +62,50 @@ router.get("/signup", (req, res) => {
 });
 
 router.post("/signup", multiparty, async (req, res) => {
-  var file = req.files.proofDocument;
+  //check for uploaded file, if yes ok, if not generate pdf based on form
+  var file;
+  var donor = req.body;
+  if (donor.doc_avail == "positive") {
+    file = req.files.proofDocument;
+  } else {
+    // gen pdf to uplad
+    try {
+      console.log("Trying generation for test proof...");
+      //console.log(newDonor);
+      doc = new PDFDocument();
+      var pdfFile = `${donor.firstname}_${donor.lastname}_COVID-19_test.pdf`;
+      var pdfStream = fs.createWriteStream(pdfFile);
+      doc.font("Times-Italic").fontSize(10);
+      doc.text(donor.firstname + " " + donor.lastname, 70, 600);
+      doc.text(donor.test_location, 275, 600);
+      doc.text(donor.test_date, 440, 600); //date
+      doc.pipe(pdfStream);
+      doc.end();
+    } catch (err) {
+      console.error("COVID-19 Pdf generation error: " + err.message);
+      errors.push({
+        msg: "Could not generate COVID-19 document",
+      });
+      res.render("signup", {
+        errors,
+      });
+    }
+    pdfStream.on("finish", function () {
+      var pdfStats = fs.statSync(pdfFile);
+      file = {
+        name: `${donor.firstname}_${donor.lastname}_COVID-19_test.pdf`,
+        path: pdfFile,
+        size: pdfStats.size,
+      };
+    });
+  }
   // console.log(file);
   // if (file.originalFilename == "") console.log("No file selected");
   console.log("posting user data to db");
-  donor = req.body;
   console.log("/////////////////////////////////////");
   console.log(donor.hipaa_signature);
   console.log("/////////////////////////////////////");
+  console.log(`doc avail: ${donor.doc_avail}`);
   let errors = [];
   if (
     !donor.firstname ||
@@ -98,7 +134,7 @@ router.post("/signup", multiparty, async (req, res) => {
     errors.push({
       msg: "Passwords must match",
     });
-  } else if (file.originalFilename == "") {
+  } else if (donor.doc_avail == "positive" && file.originalFilename == "") {
     errors.push({
       msg: "The COVID-19 recovery document is required",
     });

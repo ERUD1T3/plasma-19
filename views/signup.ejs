@@ -218,12 +218,45 @@
             <!-- <div class="fileupload">
               <input type="file" name="fileupload" id="fileupload">
             </div>   -->
+            <div class="form-group">
+              <label for="bloodType">Do you have your COVID-19 test results documentation?</label>
+                <div class="form-check form-check-inline" style="margin-top: 0.8em;">
+                  <input class="form-check-input" type="radio" name="doc_avail" id="yes_doc" value="positive" required/>
+                  <label class="form-check-label" for="yes_doc"> Yes</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="doc_avail" id="no_doc" value="negative" required/>
+                  <label class="form-check-label" for="no_doc"> No</label>
+                </div>
+            </div>
               <div>COVID-19 Test</div>
-              <div class="custom-file" style="margin-bottom: 1em">
-                <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">
-                <label class="custom-file-label" for="proofDocument">Upload Document</label>
-                <small class="form-text text-muted">Test results, hospital documents or other evidence of having COVID-19 in the past or recovering from it</small>
+              <div id="doc-upload">
+                <div class="custom-file" style="margin-bottom: 1em">
+                  <input type="file" class="custom-file-input" name="proofDocument" id="proofDocument">
+                  <label class="custom-file-label" for="proofDocument">Upload Document</label>
+                  <small class="form-text text-muted">Test results, hospital documents or other evidence of having COVID-19 in the past
+                    or recovering from it</small>
+                </div>
               </div>
+                <div id="testing_info" style="display: none;">
+                  <div class="form-group">
+                    <label for="test_location">What is the name of the center or organization where you got tested?</label>
+                    <input type="text" class="form-control" id="test_location" name="test_location">
+                  </div>
+                  <div class="form-group">
+                    <label for="test_date">Test date</label>
+                    <input type="date" id="test_date" name="test_date">
+                  </div>
+                  <div class="form-group">
+                    <div class="custom-control custom-checkbox my-1 mr-sm-2">
+                      <input type="checkbox" class="custom-control-input" id="2_weeks" name="2_weeks">
+                      <label class="custom-control-label" for="2_weeks">Check this box to confirm that it has been at least 2 weeks since you are symptom free.</label>
+                    </div>
+                   
+                  </div>
+                  
+                </div>
+              
             <br><br>
             <div class="form-group">
               <div class="custom-control custom-checkbox my-1 mr-sm-2">
@@ -273,16 +306,33 @@
 
           //File upload management
             $('#proofDocument').on('change', function () {
-              // $('#GFG_DOWN').text(this.files[0].size + "bytes");
               var medDoc = this.files[0];
               console.log(medDoc);
-              // $('#print-name').text(cad_file.name);
-              // var fileSize = cad_file.size / 1024;
-              // var roundedFileSize = Math.round(fileSize * 10) / 10;
-              // $('#print-size').text(roundedFileSize + ' Kb');
-              // $('#print-data').fadeIn();
-              // $('#print-details-container').fadeIn();
             });
+
+          //Available document management
+          $('#yes_doc').on("change", function(){
+            console.log("Document is available");
+            $('#doc-upload').show();
+            $('#testing_info').hide();
+             // Do not require testing info for submission
+            document.getElementById("test_location").required = false;
+            document.getElementById("test_date").required = false;
+            document.getElementById("2_weeks").required = false;
+          });
+
+            $('#no_doc').on("change", function () {
+                console.log("Document is not available");
+                $('#doc-upload').hide();
+                $('#testing_info').show();
+              // Require testing info for submission
+                document.getElementById("test_location").required = true;
+                document.getElementById("test_date").required = true;
+                document.getElementById("2_weeks").required = true;
+              });
+          // document.getElementsById("yes-doc").on("change", function(){
+          //   console.log("Avail doc changed");
+          // })
       </script>
     </div>
   </div>
