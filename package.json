@@ -36,7 +36,7 @@
     "gridfs-stream": "^1.1.1",
     "http": "0.0.1-security",
     "https": "^1.0.0",
-    "jspdf": "^1.5.3",
+    "jspdf": "^2.3.1",
     "method-override": "^3.0.0",
     "mongoose": "^5.9.7",
     "morgan": "^1.10.0",
